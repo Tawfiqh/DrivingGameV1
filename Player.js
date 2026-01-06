@@ -14,7 +14,7 @@ class Player {
     velocityIncrement = 2;
     maxVelocity = 10;
     maxSteeringAngle = 135;
-
+    steeringAngleIncrement = 30; // degrees
 
     constructor(initialX = 10, initialY = 10, width = 3, length = 5, color = 'red') {
         this.x = initialX;
