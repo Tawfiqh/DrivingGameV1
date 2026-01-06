@@ -31,29 +31,53 @@ class TopDown2dRenderer {
         //     console.log("rendering!", this.gameState.player)
         // }
 
+        this.drawRoad();
+
         // Draw the car at it's position as a box
         this.drawCar(this.player());
 
+
     }
 
-    translateWorldToCanvas() {
+
+    drawRoad() {
+
+        const roadPosition = {
+            x: 0,
+            y: 0
+        }
+
+        let canvasRoad = this.translateWorldToCanvas(roadPosition)
+
+        this.drawRect(
+            canvasRoad.x, //x
+            canvasRoad.y, //y
+            0, //rotation
+            this.gameState.roadWidth, //width
+            this.initialMapSize * 2, //length
+            'gray' //color
+        );
+    }
+
+
+    translateWorldToCanvas(worldPosition) {
         return {
             // X should be centered on the canvas
             // World X: -1 .. 1 => 0 .. 2 => 0..1
             // Canvas X: 0..MapWidth
-            x: (this.gameState.player.x + 1) / 2 * this.initialMapSize,
+            x: (worldPosition.x + 1) / 2 * this.initialMapSize,
 
             // World Y: 0..inf
             // Canvas X: 0..MapWidth
             // Y should be at the bottom of the canvas
-            y: (this.initialMapSize - this.gameState.player.y),
+            y: (this.initialMapSize - worldPosition.y),
         }
     }
 
     player() {
         return {
-            x: this.translateWorldToCanvas(this.gameState.player.x).x,
-            y: this.translateWorldToCanvas(this.gameState.player.y).y,
+            x: this.translateWorldToCanvas(this.gameState.player).x,
+            y: this.translateWorldToCanvas(this.gameState.player).y,
             steeringAngle: this.gameState.player.steeringAngle,
             width: this.gameState.player.width,
             length: this.gameState.player.length,
