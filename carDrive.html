@@ -26,10 +26,8 @@
 </body>
 
 <script type="module">
-    import { TopDown2dRenderer } from './TopDown2dRenderer.js';
-    import { CarGame } from './CarGame.js';
-
-
+    import { TopDown2dRenderer } from './dist/TopDown2dRenderer.js';
+    import { CarGame } from './dist/CarGame.js';
 
     const carGame = new CarGame();
     const renderer = new TopDown2dRenderer(carGame.gameState, gameCanvas);

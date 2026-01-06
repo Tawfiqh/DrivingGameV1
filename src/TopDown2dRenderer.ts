@@ -1,17 +1,44 @@
+import { Player, PlayerState } from './Player.js';
+
+interface GameState {
+    player: Player;
+    roadWidth: number;
+}
+
+interface Position {
+    x: number;
+    y: number;
+}
+
+interface CanvasPlayer {
+    x: number;
+    y: number;
+    steeringAngle: number;
+    width: number;
+    length: number;
+    color: string;
+}
+
 // initialise the renderer
-class TopDown2dRenderer {
+export class TopDown2dRenderer {
+    scaleFactor: number = 2.0; // this is the number of pixels per game unit
+    initialMapSize: number = 100;
+    FPS: number = 120;
 
-    scaleFactor = 2.0; // this is the number of pixels per game unit
-    initialMapSize = 100;
+    gameState: GameState;
+    ctx: CanvasRenderingContext2D;
+    canvas: HTMLCanvasElement;
 
-    FPS = 120
-
-    constructor(gameState, canvas) {
+    constructor(gameState: GameState, canvas: HTMLCanvasElement) {
         this.gameState = gameState;
-        this.ctx = canvas.getContext("2d");
+        const context = canvas.getContext("2d");
+        if (!context) {
+            throw new Error("Could not get 2d context from canvas");
+        }
+        this.ctx = context;
 
         // set width and height to initial map-size
-        this.canvas = canvas // used for clearing
+        this.canvas = canvas; // used for clearing
         this.canvas.width = this.initialMapSize * this.scaleFactor;
         this.canvas.height = this.initialMapSize * this.scaleFactor;
 
@@ -20,8 +47,8 @@ class TopDown2dRenderer {
         }, this.FPS / 1000);
     }
 
-    render() {
-        this.clearCanvas()
+    render(): void {
+        this.clearCanvas();
         // Render the world from 0 to 100 on x and y
         // TBC
 
@@ -35,19 +62,15 @@ class TopDown2dRenderer {
 
         // Draw the car at it's position as a box
         this.drawCar(this.player());
-
-
     }
 
-
-    drawRoad() {
-
-        const roadPosition = {
+    drawRoad(): void {
+        const roadPosition: Position = {
             x: 0,
             y: 0
-        }
+        };
 
-        let canvasRoad = this.translateWorldToCanvas(roadPosition)
+        const canvasRoad = this.translateWorldToCanvas(roadPosition);
 
         this.drawRect(
             canvasRoad.x, //x
@@ -59,8 +82,7 @@ class TopDown2dRenderer {
         );
     }
 
-
-    translateWorldToCanvas(worldPosition) {
+    translateWorldToCanvas(worldPosition: Position): Position {
         return {
             // X should be centered on the canvas
             // World X: -1 .. 1 => 0 .. 2 => 0..1
@@ -71,10 +93,10 @@ class TopDown2dRenderer {
             // Canvas X: 0..MapWidth
             // Y should be at the bottom of the canvas
             y: (this.initialMapSize - worldPosition.y),
-        }
+        };
     }
 
-    player() {
+    player(): CanvasPlayer {
         return {
             x: this.translateWorldToCanvas(this.gameState.player).x,
             y: this.translateWorldToCanvas(this.gameState.player).y,
@@ -82,10 +104,10 @@ class TopDown2dRenderer {
             width: this.gameState.player.width,
             length: this.gameState.player.length,
             color: this.gameState.player.color
-        }
+        };
     }
 
-    drawCar(canvasPlayer) {
+    drawCar(canvasPlayer: CanvasPlayer): void {
         //Draw box
         this.drawRect(
             canvasPlayer.x,
@@ -114,12 +136,10 @@ class TopDown2dRenderer {
             canvasPlayer.length / 10,
             'yellow'
         );
-
     }
 
-
     // Rotate with player direction
-    drawRect(x, y, rotation, width, length, color) {
+    drawRect(x: number, y: number, rotation: number, width: number, length: number, color: string): void {
         // Save the current canvas state - e.g the state it uses to draw
         this.ctx.save();
 
@@ -131,7 +151,7 @@ class TopDown2dRenderer {
         this.ctx.translate(x * this.scaleFactor, y * this.scaleFactor);
 
         // Rotate around the center
-        this.ctx.rotate(rotation * Math.PI / 180);// Convert rotation from degrees to radians 
+        this.ctx.rotate(rotation * Math.PI / 180); // Convert rotation from degrees to radians 
 
         // Set fill style
         this.ctx.fillStyle = color;
@@ -148,8 +168,8 @@ class TopDown2dRenderer {
         this.ctx.restore();
     }
 
-    drawCircle(x, y, radius, color) {
-        const ctx = this.ctx
+    drawCircle(x: number, y: number, radius: number, color: string): void {
+        const ctx = this.ctx;
         ctx.beginPath();
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
@@ -160,12 +180,10 @@ class TopDown2dRenderer {
             0, 2 * Math.PI);
         ctx.stroke();
         ctx.fill();
-
     }
 
-    clearCanvas() {
+    clearCanvas(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
 
-export { TopDown2dRenderer };

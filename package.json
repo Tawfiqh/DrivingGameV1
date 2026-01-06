@@ -3,9 +3,14 @@
     "version": "1.0.0",
     "description": "Car Drive Dash game",
     "scripts": {
-        "dev": "live-server --port=3000 --open=carDrive.html --watch=."
+        "build": "tsc",
+        "watch": "tsc --watch",
+        "serve": "live-server --port=3000 --open=carDrive.html --watch=dist",
+        "dev": "npm run build && concurrently \"npm run watch\" \"npm run serve\""
     },
     "devDependencies": {
-        "live-server": "^1.2.2"
+        "concurrently": "^8.2.2",
+        "live-server": "^1.2.2",
+        "typescript": "^5.3.3"
     }
 }

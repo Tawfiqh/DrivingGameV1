@@ -1,24 +1,27 @@
-import { Player, DIRECTIONS } from './Player.js';
+import { Player, DIRECTIONS, Direction } from './Player.js';
 
 // GameState class - manages the game state
 class GameState {
+    player: Player;
+    roadWidth: number;
+
     constructor() {
         this.player = new Player(0, 10, 3, 5, 'red');
-        this.roadWidth = 50
+        this.roadWidth = 50;
     }
 
-    update(runLoopIntervalMilliseconds) {
+    update(runLoopIntervalMilliseconds: number): void {
         this.player.updatePosition(runLoopIntervalMilliseconds / 1000);
     }
-
 }
 
 // Initialise the game-state
-class CarGame {
-
+export class CarGame {
     // Constants
-    FPS = 120;
-    runLoopIntervalMilliseconds = 1000 / this.FPS / 2; // Twice the FPS
+    readonly FPS: number = 120;
+    readonly runLoopIntervalMilliseconds: number = 1000 / this.FPS / 2; // Twice the FPS
+
+    gameState!: GameState;
 
     constructor() {
         console.log('Welcome to Car Game 🚗');
@@ -30,24 +33,21 @@ class CarGame {
 
         //3.
         this.setupGameRunLoop();
-
     }
-    setupGameState() {
+
+    setupGameState(): void {
         this.gameState = new GameState();
     }
 
-    setupGameRunLoop() {
+    setupGameRunLoop(): void {
         setInterval(() => {
-            this.gameState.update(this.runLoopIntervalMilliseconds)
-        }, this.runLoopIntervalMilliseconds
-        );
+            this.gameState.update(this.runLoopIntervalMilliseconds);
+        }, this.runLoopIntervalMilliseconds);
     }
 
-
-    setupKeyboardControls() {
-
+    setupKeyboardControls(): void {
         // Debounced / throttled keyboard controls
-        document.addEventListener('keydown', (event) => {
+        document.addEventListener('keydown', (event: KeyboardEvent) => {
             console.log('keydown', event.key);
             switch (event.key) {
                 case 'ArrowUp':
@@ -80,9 +80,6 @@ class CarGame {
         //     this.touchendY = e.changedTouches[0].screenY
         //     this.checkSwipeDirection()
         // })
-
     }
 }
-
-export { CarGame };
 
