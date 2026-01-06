@@ -1,0 +1,50 @@
+<!-- TODO: 
+1. Basic run loop - updating game state and rendering
+2. Basic game = car drives along - can steer left and right and forward (no reverse??? TBC)
+3. Draw a road
+4. Populate obstacles on the road and off-the road
+5. Collision detection if it's off-road
+6. Scoring based on displacement from start-point
+7. Vehicles on the road
+8. Power-ups
+9. 3d rednering that follows the car
+10. Move to typescript
+
+-->
+
+<head>
+
+    <script type="text/javascript" src="http://livejs.com/live.js"></script>
+
+    <title>Car Drive</title>
+    <style>
+        :root {
+            --main-color: red;
+        }
+
+        body {
+            background-color: black;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        canvas {
+            border: 1px solid var(--main-color);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Car Drive</h1>
+    <canvas id="gameCanvas"></canvas>
+</body>
+
+<script type="module">
+    import { TopDown2dRenderer } from './TopDown2dRenderer.js';
+    import { CarGame } from './CarGame.js';
+
+
+
+    const carGame = new CarGame();
+    const renderer = new TopDown2dRenderer(carGame.gameState, gameCanvas);
+</script>
