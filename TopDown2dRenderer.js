@@ -30,6 +30,7 @@ class TopDown2dRenderer {
         // if (unixTimestamp % 1000 == 0) { // every second
         //     console.log("rendering!", this.gameState.player)
         // }
+
         // Draw the car at it's position as a box
         this.drawCar(this.player());
 
@@ -60,36 +61,67 @@ class TopDown2dRenderer {
         }
     }
 
-    drawCar(player) {
+    drawCar(canvasPlayer) {
         //Draw box
         this.drawRect(
-            player.x,
-            player.y,
-            player.steeringAngle,
-            player.width,
-            player.length,
-            player.color
+            canvasPlayer.x,
+            canvasPlayer.y,
+            canvasPlayer.steeringAngle,
+            canvasPlayer.width,
+            canvasPlayer.length,
+            canvasPlayer.color
         );
 
-        //draw headlights
+        //TBC - Rotate headlights to face the direction of the car properly
+        this.drawRect(
+            canvasPlayer.x + canvasPlayer.width / 4,
+            canvasPlayer.y - canvasPlayer.length / 2,
+            canvasPlayer.steeringAngle,
+            canvasPlayer.width / 5,
+            canvasPlayer.length / 10,
+            'yellow'
+        );
+
+        this.drawRect(
+            canvasPlayer.x - canvasPlayer.width / 4,
+            canvasPlayer.y - canvasPlayer.length / 2,
+            canvasPlayer.steeringAngle,
+            canvasPlayer.width / 5,
+            canvasPlayer.length / 10,
+            'yellow'
+        );
 
     }
 
+
     // Rotate with player direction
-    // adjust to be centred
     drawRect(x, y, rotation, width, length, color) {
-        this.ctx.beginPath();
-        this.ctx.rect(
-            (x - width / 2) * this.scaleFactor,
-            (y - length / 2) * this.scaleFactor,
-            width * this.scaleFactor,
-            length * this.scaleFactor
+        // Save the current canvas state - e.g the state it uses to draw
+        this.ctx.save();
+
+        // Scale coordinates to canvas pixels
+        const scaledWidth = width * this.scaleFactor;
+        const scaledLength = length * this.scaleFactor;
+
+        // Translate to the center point of the rectangle
+        this.ctx.translate(x * this.scaleFactor, y * this.scaleFactor);
+
+        // Rotate around the center
+        this.ctx.rotate(rotation * Math.PI / 180);// Convert rotation from degrees to radians 
+
+        // Set fill style
+        this.ctx.fillStyle = color;
+
+        // Draw rectangle centered at (0, 0) relative to the center point
+        this.ctx.fillRect(
+            -scaledWidth / 2,
+            -scaledLength / 2,
+            scaledWidth,
+            scaledLength
         );
 
-        this.ctx.strokeStyle = color;
-        this.ctx.fillStyle = color;
-        this.ctx.stroke();
-        this.ctx.fill();
+        // Restore the canvas state to prevent transformations from accumulating
+        this.ctx.restore();
     }
 
     drawCircle(x, y, radius, color) {
