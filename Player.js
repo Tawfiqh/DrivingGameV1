@@ -74,8 +74,8 @@ class Player {
         const intervalVelocity = this.velocity * secondsSinceLastUpdate; // velocity is in metres per second -- but a whole second might not have elapsed!
 
         // Update the position of the player based on the steering angle and velocity
-        this.x += intervalVelocity * Math.cos(this.steeringAngle * Math.PI / 180);
-        this.y += intervalVelocity * Math.sin(this.steeringAngle * Math.PI / 180);
+        this.x += intervalVelocity * Math.sin(this.steeringAngle * Math.PI / 180);
+        this.y += intervalVelocity * Math.cos(this.steeringAngle * Math.PI / 180);
 
         // Debugging - print the position every second
         console.log('UPDATEdddd Position:', this.x, this.y);
