@@ -3,7 +3,8 @@ import { Player, DIRECTIONS } from './Player.js';
 // GameState class - manages the game state
 class GameState {
     constructor() {
-        this.player = new Player(10, 10, 3, 5, 'red');
+        this.player = new Player(0, 10, 3, 5, 'red');
+        this.roadWidth = 50
     }
 
     update(runLoopIntervalMilliseconds) {

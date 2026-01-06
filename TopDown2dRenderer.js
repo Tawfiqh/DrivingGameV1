@@ -26,19 +26,71 @@ class TopDown2dRenderer {
         // TBC
 
         // Debugging - print the position every second
-        const unixTimestamp = Date.now();
-        if (unixTimestamp % 1000 == 0) { // every second
-            console.log("rendering!", this.gameState.player)
-        }
+        // const unixTimestamp = Date.now();
+        // if (unixTimestamp % 1000 == 0) { // every second
+        //     console.log("rendering!", this.gameState.player)
+        // }
         // Draw the car at it's position as a box
-        this.drawCircle(this.gameState.player.x,
-            this.gameState.player.y,
-            this.gameState.player.width,
-            this.gameState.player.color
-        );
+        this.drawCar(this.player());
 
     }
 
+    translateWorldToCanvas() {
+        return {
+            // X should be centered on the canvas
+            // World X: -1 .. 1 => 0 .. 2 => 0..1
+            // Canvas X: 0..MapWidth
+            x: (this.gameState.player.x + 1) / 2 * this.initialMapSize,
+
+            // World Y: 0..inf
+            // Canvas X: 0..MapWidth
+            // Y should be at the bottom of the canvas
+            y: (this.initialMapSize - this.gameState.player.y),
+        }
+    }
+
+    player() {
+        return {
+            x: this.translateWorldToCanvas(this.gameState.player.x).x,
+            y: this.translateWorldToCanvas(this.gameState.player.y).y,
+            steeringAngle: this.gameState.player.steeringAngle,
+            width: this.gameState.player.width,
+            length: this.gameState.player.length,
+            color: this.gameState.player.color
+        }
+    }
+
+    drawCar(player) {
+        //Draw box
+        this.drawRect(
+            player.x,
+            player.y,
+            player.steeringAngle,
+            player.width,
+            player.length,
+            player.color
+        );
+
+        //draw headlights
+
+    }
+
+    // Rotate with player direction
+    // adjust to be centred
+    drawRect(x, y, rotation, width, length, color) {
+        this.ctx.beginPath();
+        this.ctx.rect(
+            (x - width / 2) * this.scaleFactor,
+            (y - length / 2) * this.scaleFactor,
+            width * this.scaleFactor,
+            length * this.scaleFactor
+        );
+
+        this.ctx.strokeStyle = color;
+        this.ctx.fillStyle = color;
+        this.ctx.stroke();
+        this.ctx.fill();
+    }
 
     drawCircle(x, y, radius, color) {
         const ctx = this.ctx
