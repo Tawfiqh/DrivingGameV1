@@ -17,8 +17,6 @@ Basic game
 3d Rendering
 -------------
 1. 3d rednering that follows the car
-2. Move to typescript
-
 
 
 Game mechanics

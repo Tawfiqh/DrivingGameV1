@@ -4,10 +4,10 @@ A top-down 2D driving game built with TypeScript and HTML5 Canvas. Drive your ca
 
 ## Features
 
-- **Smooth Car Physics**: Realistic steering and velocity mechanics with configurable max speed and steering angles
+- **Smooth Car Driving**: "Realistic" steering and velocity mechanics with configurable max speed and steering angles
 - **Procedural Road Generation**: Infinite roads that generate as you drive
 - **Dynamic Environment**: Trees populate on both sides of the road as you progress
-- **Top-Down 2D Rendering**: Clean canvas-based rendering with proper coordinate transformations
+- **Top-Down 2D Rendering**: Canvas-based rendering with coordinate transformations
 - **Keyboard Controls**: Intuitive WASD or arrow key controls
 - **TypeScript**: Fully typed codebase for better maintainability
 
@@ -73,16 +73,14 @@ npm run serve
 
 ### Player Physics
 - **Velocity**: Adjustable speed with a maximum limit
-- **Steering**: Realistic steering angle system (max 135 degrees)
+- **Steering**: Steering angle system (max 135 degrees)
 - **Movement**: Position updates based on velocity and steering angle using trigonometry
 
 ### Road System
-- Roads are generated procedurally
 - Road width is configurable
 - Roads extend infinitely as you drive
 
 ### Environment
-- Trees are procedurally generated on both sides of the road
 - Trees are generated dynamically based on view distance
 - Tree density and size are configurable
 
@@ -127,12 +125,7 @@ Player physics can be adjusted in `src/Player.ts`:
 
 ## Future Enhancements
 
-See `Todo.md` for planned features:
-- Collision detection and crash mechanics
-- Scoring system
-- Other vehicles on the road
-- 3D rendering mode
-- Touch controls for mobile devices
+See `Todo.md` for planned features
 
 ## Technologies Used
 
@@ -140,12 +133,4 @@ See `Todo.md` for planned features:
 - **HTML5 Canvas**: 2D rendering
 - **live-server**: Development server with live reload
 - **concurrently**: Run multiple npm scripts simultaneously
-
-## License
-
-This project is open source and available for personal use.
-
-## Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests.
 
