@@ -1,14 +1,5 @@
-import { Player, PlayerState } from './Player.js';
+import { GameState, Tree, Position } from './CarGame.js';
 
-interface GameState {
-    player: Player;
-    roadWidth: number;
-}
-
-interface Position {
-    x: number;
-    y: number;
-}
 
 interface CanvasPlayer {
     x: number;
@@ -21,8 +12,7 @@ interface CanvasPlayer {
 
 // initialise the renderer
 export class TopDown2dRenderer {
-    scaleFactor: number = 2.0; // this is the number of pixels per game unit
-    initialMapSize: number = 100;
+    initialMapSize: number = 200;
     FPS: number = 120;
 
     gameState: GameState;
@@ -39,8 +29,8 @@ export class TopDown2dRenderer {
 
         // set width and height to initial map-size
         this.canvas = canvas; // used for clearing
-        this.canvas.width = this.initialMapSize * this.scaleFactor;
-        this.canvas.height = this.initialMapSize * this.scaleFactor;
+        this.canvas.width = this.initialMapSize;
+        this.canvas.height = this.initialMapSize;
 
         setInterval(() => {
             this.render();
@@ -60,34 +50,61 @@ export class TopDown2dRenderer {
 
         this.drawRoad();
 
+        // Draw trees off the road
+        this.renderTrees();
+
         // Draw the car at it's position as a box
         this.drawCar(this.player());
     }
 
-    drawRoad(): void {
-        const roadPosition: Position = {
-            x: 0,
-            y: 0
-        };
+    drawRoad(): void { //TBC - this could be simpler if we don't constantly redraw
 
-        const canvasRoad = this.translateWorldToCanvas(roadPosition);
+        for (let i = 0; i < this.gameState.road.length - 1; i++) {
 
-        this.drawRect(
-            canvasRoad.x, //x
-            canvasRoad.y, //y
-            0, //rotation
-            this.gameState.roadWidth, //width
-            this.initialMapSize * 2, //length
-            'gray' //color
-        );
+            const segmentStart: [Position, Position] = this.gameState.road[i]
+            const segmentEnd: [Position, Position] = this.gameState.road[i + 1]
+
+            this.drawRoadSegment(this.translateWorldSegmentToCanvas(segmentStart), this.translateWorldSegmentToCanvas(segmentEnd))
+
+        }
+
     }
+
+    drawRoadSegment(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
+        const ctx = this.ctx;
+        ctx.beginPath();
+
+        const roadColor = 'gray';
+        ctx.strokeStyle = roadColor;
+        ctx.fillStyle = roadColor;
+
+        ctx.lineTo(segmentStart[0].x, segmentStart[0].y);
+        ctx.lineTo(segmentStart[1].x, segmentStart[1].y);
+
+
+        ctx.lineTo(segmentEnd[1].x, segmentEnd[1].y);
+        ctx.lineTo(segmentEnd[0].x, segmentEnd[0].y);
+
+        ctx.closePath();
+
+        ctx.stroke();
+        ctx.fill();
+
+    }
+    translateWorldSegmentToCanvas(worldSegment: [Position, Position]): [Position, Position] {
+        return [
+            this.translateWorldToCanvas(worldSegment[0]),
+            this.translateWorldToCanvas(worldSegment[1])
+        ];
+    }
+
 
     translateWorldToCanvas(worldPosition: Position): Position {
         return {
             // X should be centered on the canvas
-            // World X: -1 .. 1 => 0 .. 2 => 0..1
+            // World X: -10 .. 10 => 0 .. 20 => 0..10 //assumption is that the world x is only between -10 and 10
             // Canvas X: 0..MapWidth
-            x: (worldPosition.x + 1) / 2 * this.initialMapSize,
+            x: (worldPosition.x + 10) / 20 * this.initialMapSize,
 
             // World Y: 0..inf
             // Canvas X: 0..MapWidth
@@ -143,12 +160,9 @@ export class TopDown2dRenderer {
         // Save the current canvas state - e.g the state it uses to draw
         this.ctx.save();
 
-        // Scale coordinates to canvas pixels
-        const scaledWidth = width * this.scaleFactor;
-        const scaledLength = length * this.scaleFactor;
 
         // Translate to the center point of the rectangle
-        this.ctx.translate(x * this.scaleFactor, y * this.scaleFactor);
+        this.ctx.translate(x, y);
 
         // Rotate around the center
         this.ctx.rotate(rotation * Math.PI / 180); // Convert rotation from degrees to radians 
@@ -158,10 +172,10 @@ export class TopDown2dRenderer {
 
         // Draw rectangle centered at (0, 0) relative to the center point
         this.ctx.fillRect(
-            -scaledWidth / 2,
-            -scaledLength / 2,
-            scaledWidth,
-            scaledLength
+            -width / 2,
+            -length / 2,
+            width,
+            length
         );
 
         // Restore the canvas state to prevent transformations from accumulating
@@ -174,9 +188,9 @@ export class TopDown2dRenderer {
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
         ctx.arc(
-            x * this.scaleFactor,
-            y * this.scaleFactor,
-            radius * this.scaleFactor,
+            x,
+            y,
+            radius,
             0, 2 * Math.PI);
         ctx.stroke();
         ctx.fill();
@@ -184,6 +198,22 @@ export class TopDown2dRenderer {
 
     clearCanvas(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    renderTrees(): void {
+        // Render all trees in the game state
+        for (const tree of this.gameState.trees) {
+            const canvasPos = this.translateWorldToCanvas({ x: tree.x, y: tree.y });
+            // console.log('🌳🌳 renderTrees🌳', tree, "@:", canvasPos);
+
+            // Tree foliage
+            this.drawCircle(
+                canvasPos.x,
+                canvasPos.y,
+                tree.size * 0.5, // Foliage radius
+                '#228B22' // Forest green color
+            );
+        }
     }
 }
 

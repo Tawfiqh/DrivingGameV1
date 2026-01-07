@@ -94,7 +94,7 @@ export class Player {
         this.y += intervalVelocity * Math.cos(this.steeringAngle * Math.PI / 180);
 
         // Debugging - print the position every second
-        console.log('UPDATEdddd Position:', this.x, this.y);
+        // console.log('UPDATEdddd Position:', this.x, this.y);
     }
 
     // Get player state as an object (for compatibility with existing code)
