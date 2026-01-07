@@ -32,7 +32,7 @@ export class Player {
     steeringAngle: number; // how far has the user turned the steering wheel (away from 0 degrees which is straight ahead)
     velocity: number; // how fast is the car going (Meters per second)
 
-    constructor(initialX: number = 0, initialY: number = 10, width: number = 3, length: number = 5, color: string = 'red') {
+    constructor(initialX: number = 0, initialY: number = 10, width: number = 3, length: number = 10, color: string = 'red') {
         this.x = initialX;
         this.y = initialY;
         this.width = width;

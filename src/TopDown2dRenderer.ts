@@ -54,7 +54,7 @@ export class TopDown2dRenderer {
         this.renderTrees();
 
         // Draw the car at it's position as a box
-        this.drawCar(this.player());
+        this.drawCar(this.translatedPlayer());
     }
 
     drawRoad(): void { //TBC - this could be simpler if we don't constantly redraw
@@ -98,6 +98,13 @@ export class TopDown2dRenderer {
         ];
     }
 
+    translateLengthOnYAxisToCanvas(length: number): number {
+        return this.translateWorldToCanvas({ x: 0, y: 0 }).y - this.translateWorldToCanvas({ x: 0, y: length }).y
+    }
+
+    translateLengthOnXAxisToCanvas(length: number): number {
+        return this.translateWorldToCanvas({ x: length, y: 0 }).x - this.translateWorldToCanvas({ x: 0, y: 0 }).x
+    }
 
     translateWorldToCanvas(worldPosition: Position): Position {
         return {
@@ -110,16 +117,23 @@ export class TopDown2dRenderer {
             // Canvas X: 0..MapWidth
             // Y should be at the bottom of the canvas
             y: (this.initialMapSize - worldPosition.y),
+            // y: - (worldPosition.y + 10) / 20 * this.initialMapSize
         };
     }
 
-    player(): CanvasPlayer {
+    // Translate the player to the canvas coordinates
+    // This is because the player is in world coordinates, but the canvas is in canvas coordinates
+    translatedPlayer(): CanvasPlayer {
+
+        let translatedWidth = this.translateLengthOnXAxisToCanvas(this.gameState.player.width)
+        let translatedLength = this.translateLengthOnYAxisToCanvas(this.gameState.player.length)
+
         return {
             x: this.translateWorldToCanvas(this.gameState.player).x,
             y: this.translateWorldToCanvas(this.gameState.player).y,
             steeringAngle: this.gameState.player.steeringAngle,
-            width: this.gameState.player.width,
-            length: this.gameState.player.length,
+            width: translatedWidth,
+            length: translatedLength,
             color: this.gameState.player.color
         };
     }
@@ -138,7 +152,7 @@ export class TopDown2dRenderer {
         //TBC - Rotate headlights to face the direction of the car properly
         this.drawRect(
             canvasPlayer.x + canvasPlayer.width / 4,
-            canvasPlayer.y - canvasPlayer.length / 2,
+            canvasPlayer.y - (canvasPlayer.length / 2),
             canvasPlayer.steeringAngle,
             canvasPlayer.width / 5,
             canvasPlayer.length / 10,
@@ -147,7 +161,7 @@ export class TopDown2dRenderer {
 
         this.drawRect(
             canvasPlayer.x - canvasPlayer.width / 4,
-            canvasPlayer.y - canvasPlayer.length / 2,
+            canvasPlayer.y - (canvasPlayer.length / 2),
             canvasPlayer.steeringAngle,
             canvasPlayer.width / 5,
             canvasPlayer.length / 10,
@@ -210,7 +224,7 @@ export class TopDown2dRenderer {
             this.drawCircle(
                 canvasPos.x,
                 canvasPos.y,
-                tree.size * 0.5, // Foliage radius
+                this.translateLengthOnXAxisToCanvas(tree.size) * 0.5, // Foliage radius
                 '#228B22' // Forest green color
             );
         }
