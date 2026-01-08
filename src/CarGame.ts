@@ -60,12 +60,11 @@ export class CarGame {
         this.gameState = new GameState();
 
         this.roadManager = new RoadManager(this.gameState, this.roadWidth);
-        this.gameState.road = this.roadManager.generateRoad();
 
 
         this.treesManager = new TreesManager(this.gameState);
 
-        this.updateMap();
+        this.updateMap(); // trees and road are updated here    
 
     }
 
@@ -77,7 +76,9 @@ export class CarGame {
 
 
     updateMap(): void {
-        this.treesManager.updateTrees();
+        this.roadManager.updateRoad();
+
+        this.treesManager.updateTrees(); // this requires a road to be present -- so it can put trees either side of the road
         // TBC - update other map elements
         // e.g. vehicles on the road
     }
