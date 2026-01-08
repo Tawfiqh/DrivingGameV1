@@ -18,6 +18,7 @@ export class TopDown2dRenderer {
     gameState: GameState;
     ctx: CanvasRenderingContext2D;
     canvas: HTMLCanvasElement;
+    canvasCenterInWorldY: Number = 0  // only the Y will adjust to the player's y position
 
     constructor(gameState: GameState, canvas: HTMLCanvasElement) {
         this.gameState = gameState;
@@ -48,6 +49,7 @@ export class TopDown2dRenderer {
         //     console.log("rendering!", this.gameState.player)
         // }
 
+        this.updateCanvasCenterInWorld(this.gameState.player.y);
         this.drawRoad();
 
         // Draw trees off the road
@@ -55,6 +57,11 @@ export class TopDown2dRenderer {
 
         // Draw the car at it's position as a box
         this.drawCar(this.translatedPlayer());
+    }
+
+    updateCanvasCenterInWorld(playerY: number): void {
+        const yOffset = this.gameState.player.length;
+        this.canvasCenterInWorldY = playerY - yOffset
     }
 
     drawRoad(): void { //TBC - this could be simpler if we don't constantly redraw
@@ -113,11 +120,10 @@ export class TopDown2dRenderer {
             // Canvas X: 0..MapWidth
             x: (worldPosition.x + 10) / 20 * this.initialMapSize,
 
-            // World Y: 0..inf
-            // Canvas X: 0..MapWidth
+            // World Y: 0..10
+            // Canvas Y: 0..MapHeight
             // Y should be at the bottom of the canvas
-            y: (this.initialMapSize - worldPosition.y),
-            // y: - (worldPosition.y + 10) / 20 * this.initialMapSize
+            y: this.initialMapSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.initialMapSize),
         };
     }
 

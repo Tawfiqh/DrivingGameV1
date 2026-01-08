@@ -14,9 +14,17 @@ Basic game
 
 
 
+2D Rendering
+-------------
+1. ✅ 2d renderer isn't squashed
+2. ✅ Renderer that follows the car as it moves past 1000
+3. Road Markings
+
 3d Rendering
 -------------
-1. 3d rednering that follows the car
+1. 3d rednering that follows the car - based on chat GPT projection
+2. Start with basic reimplementation of the 2d renderer
+
 
 
 Game mechanics
