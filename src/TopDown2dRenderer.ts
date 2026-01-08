@@ -1,4 +1,5 @@
-import { GameState, Tree, Position } from './CarGame.js';
+import { GameState, Position } from './CarGame.js';
+import { Tree } from './TreeManager.js';
 
 
 interface CanvasPlayer {
@@ -18,7 +19,7 @@ export class TopDown2dRenderer {
     gameState: GameState;
     ctx: CanvasRenderingContext2D;
     canvas: HTMLCanvasElement;
-    canvasCenterInWorldY: Number = 0  // only the Y will adjust to the player's y position
+    canvasCenterInWorldY: number = 0  // only the Y will adjust to the player's y position
 
     constructor(gameState: GameState, canvas: HTMLCanvasElement) {
         this.gameState = gameState;
