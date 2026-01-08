@@ -33,11 +33,13 @@ export class RoadManager {
     }
 
     updateRoad(): void {
-        //TBC
+
         if (this.gameState.road.length === 0) {
             console.log('🛣🛣 generating new road');
             this.gameState.road = this.generateRoad();
         }
+
+        // TBC - could add potholes!
 
         //TBC - update the road based on the player's position -- and create infinite road
     }
