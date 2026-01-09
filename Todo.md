@@ -9,6 +9,8 @@ Basic game
 4. ✅ Populate trees off-the road
 5. ✅ Move to Typescript
 6. Collision detection if it's off-road => crash = end the game
+    collision detector
+    gameState gameVOER - in renderer
 7. Scoring based on displacement from start-point
 8. Vehicles on the road
 

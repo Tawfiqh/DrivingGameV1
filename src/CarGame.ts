@@ -18,12 +18,14 @@ export class GameState {
     player: Player;
     trees: Tree[];
     road: Road;
+    gameOver: boolean;
 
 
     constructor() {
         this.player = new Player(0, 10);
         this.road = []
         this.trees = [];
+        this.gameOver = false;
     }
 
 }
@@ -43,6 +45,9 @@ export class CarGame {
     gameState!: GameState;
     treesManager!: TreesManager;
     roadManager!: RoadManager;
+
+    //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    private runLoopInterval!: ReturnType<typeof setInterval>;
 
     constructor() {
         console.log('Welcome to Car Game 🚗');
@@ -106,7 +111,7 @@ export class CarGame {
     }
 
     setupGameRunLoop(): void {
-        setInterval(() => {
+        this.runLoopInterval = setInterval(() => {
             this.runLoop(this.runLoopIntervalMilliseconds);
         }, this.runLoopIntervalMilliseconds);
     }
@@ -120,6 +125,31 @@ export class CarGame {
 
     checkCollisions(): void {
         // TBC - check for collisions with the road and trees
+        // Check for collisions with trees
+
+        const playerMaxSize = Math.max(this.gameState.player.width, this.gameState.player.length) * 1.5; // add buffer to the player's size
+
+        const closeTrees = this.gameState.trees.filter(tree =>
+            tree.y > this.gameState.player.y - playerMaxSize
+            && tree.y < this.gameState.player.y + playerMaxSize
+            && tree.x > this.gameState.player.x - playerMaxSize
+            && tree.x < this.gameState.player.x + playerMaxSize
+        );
+
+        if (closeTrees.length > 0) {
+            console.log('🌳🌳 Checvking closeTrees', closeTrees.length, "/", this.gameState.trees.length);
+            for (let tree of closeTrees) {
+                let treeHasCollided = tree.checkCollisionWithPlayer(this.gameState.player)
+                if (treeHasCollided) { this.endGame() }
+            }
+
+        }
+    }
+
+    endGame() {
+        console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=🚗🚗 Game Over 🚗🚗  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=');
+        clearInterval(this.runLoopInterval) // Cancel the run loop - stop it from updating
+        this.gameState.gameOver = true;
     }
 
     updateMap(): void {

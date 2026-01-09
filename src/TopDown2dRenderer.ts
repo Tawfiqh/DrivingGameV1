@@ -231,7 +231,7 @@ export class TopDown2dRenderer {
             this.drawCircle(
                 canvasPos.x,
                 canvasPos.y,
-                this.translateLengthOnXAxisToCanvas(tree.size) * 0.5, // Foliage radius
+                this.translateLengthOnXAxisToCanvas(tree.radius),
                 '#228B22' // Forest green color
             );
         }
