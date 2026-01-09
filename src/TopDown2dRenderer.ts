@@ -20,9 +20,12 @@ export class TopDown2dRenderer {
     ctx: CanvasRenderingContext2D;
     canvas: HTMLCanvasElement;
     canvasCenterInWorldY: number = 0  // only the Y will adjust to the player's y position
+    gameOver: HTMLDivElement;
 
-    constructor(gameState: GameState, canvas: HTMLCanvasElement) {
+    constructor(gameState: GameState, canvas: HTMLCanvasElement, gameOver: HTMLDivElement) {
         this.gameState = gameState;
+        this.gameOver = gameOver;
+
         const context = canvas.getContext("2d");
         if (!context) {
             throw new Error("Could not get 2d context from canvas");
@@ -39,25 +42,37 @@ export class TopDown2dRenderer {
         }, this.FPS / 1000);
     }
 
+    endGameCheck(): void {
+        if (this.gameState.gameOver) {
+            this.gameOver.style.display = 'block';
+            this.gameOver.innerHTML = 'Game Over - refresh to play again';
+        }
+    }
+
     render(): void {
-        this.clearCanvas();
-        // Render the world from 0 to 100 on x and y
-        // TBC
+        if (this.gameState.gameOver) {
+            this.endGameCheck();
+        }
+        else {
+            this.clearCanvas();
+            // Render the world from 0 to 100 on x and y
+            // TBC
 
-        // Debugging - print the position every second
-        // const unixTimestamp = Date.now();
-        // if (unixTimestamp % 1000 == 0) { // every second
-        //     console.log("rendering!", this.gameState.player)
-        // }
+            // Debugging - print the position every second
+            // const unixTimestamp = Date.now();
+            // if (unixTimestamp % 1000 == 0) { // every second
+            //     console.log("rendering!", this.gameState.player)
+            // }
 
-        this.updateCanvasCenterInWorld(this.gameState.player.y);
-        this.drawRoad();
+            this.updateCanvasCenterInWorld(this.gameState.player.y);
+            this.drawRoad();
 
-        // Draw trees off the road
-        this.renderTrees();
+            // Draw trees off the road
+            this.renderTrees();
 
-        // Draw the car at it's position as a box
-        this.drawCar(this.translatedPlayer());
+            // Draw the car at it's position as a box
+            this.drawCar(this.translatedPlayer());
+        }
     }
 
     updateCanvasCenterInWorld(playerY: number): void {
@@ -116,7 +131,7 @@ export class TopDown2dRenderer {
 
     translateWorldToCanvas(worldPosition: Position): Position {
         return {
-            // X should be centered on the canvas
+            // X=0 should be centered on the canvas
             // World X: -10 .. 10 => 0 .. 20 => 0..10 //assumption is that the world x is only between -10 and 10
             // Canvas X: 0..MapWidth
             x: (worldPosition.x + 10) / 20 * this.initialMapSize,
@@ -134,10 +149,12 @@ export class TopDown2dRenderer {
 
         let translatedWidth = this.translateLengthOnXAxisToCanvas(this.gameState.player.width)
         let translatedLength = this.translateLengthOnYAxisToCanvas(this.gameState.player.length)
+        let translatedCenter = this.translateWorldToCanvas(this.gameState.player)
+
 
         return {
-            x: this.translateWorldToCanvas(this.gameState.player).x,
-            y: this.translateWorldToCanvas(this.gameState.player).y,
+            x: translatedCenter.x,
+            y: translatedCenter.y,
             steeringAngle: this.gameState.player.steeringAngle,
             width: translatedWidth,
             length: translatedLength,
@@ -217,21 +234,46 @@ export class TopDown2dRenderer {
         ctx.fill();
     }
 
+    drawEllipse(x: number, y: number, radiusX: number, radiusY: number, color: string): void {
+        const ctx = this.ctx;
+        ctx.beginPath();
+
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+
+        ctx.ellipse(x, y, radiusX, radiusY, 0, 0, 2 * Math.PI             );
+
+        ctx.stroke();
+        ctx.fill();
+    }
+
     clearCanvas(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     renderTrees(): void {
         // Render all trees in the game state
+        // let i = 0
         for (const tree of this.gameState.trees) {
             const canvasPos = this.translateWorldToCanvas({ x: tree.x, y: tree.y });
             // console.log('🌳🌳 renderTrees🌳', tree, "@:", canvasPos);
 
+            // if (i ==0 ){
+            //    console.log('🌳🌳 drawEllipse🌳',
+            //      this.translateLengthOnXAxisToCanvas(tree.radius), 
+            //      this.translateLengthOnYAxisToCanvas(tree.radius)
+            //      , canvasPos.x, canvasPos.y
+            //     );
+            //    i++;
+            // }
+
+
             // Tree foliage
-            this.drawCircle(
+            this.drawEllipse(
                 canvasPos.x,
                 canvasPos.y,
                 this.translateLengthOnXAxisToCanvas(tree.radius),
+                this.translateLengthOnYAxisToCanvas(tree.radius),
                 '#228B22' // Forest green color
             );
         }

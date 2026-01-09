@@ -20,12 +20,46 @@
             height: min(80vw, 80vh);
 
         }
+
+        #gameCanvas {
+            border: 1px solid greenyellow;
+            border-radius: 10px;
+        }
+
+        #gameOver {
+            display: none;
+            width: 50%;
+            border: 1px solid greenyellow;
+            border-radius: 10px;
+
+            padding: 20px;
+            z-index: 10;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+
+            background-color: greenyellow;
+            color: black;
+        }
+
+        .centreDiv {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
     </style>
 </head>
 
 <body>
     <h1>Car Drive</h1>
-    <canvas id="gameCanvas"></canvas>
+    <canvas id="gameCanvas" class="centreDiv"></canvas>
+
+    <div id="gameOver" class="centreDiv">
+        <h1> Score: <span id="finalScore">0</span> </h1>
+        <h1> Game Over - refresh to play again </h1>
+    </div>
+
 </body>
 
 <script type="module">
@@ -33,5 +67,5 @@
     import { CarGame } from './dist/CarGame.js';
 
     const carGame = new CarGame();
-    const renderer = new TopDown2dRenderer(carGame.gameState, gameCanvas);
+    const renderer = new TopDown2dRenderer(carGame.gameState, gameCanvas, gameOver);
 </script>
