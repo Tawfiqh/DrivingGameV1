@@ -137,55 +137,60 @@ export class TopDown2dRenderer {
 
     drawRoadSegmentMarkings(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
 
-        this.drawRoadSegmentLanes(segmentStart, segmentEnd)
+
+        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 1 / 3, this.roadMarkingsColor, 1) // draw Road Segment Lanes
+
+        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 0.99, this.roadMarkingsColor, 0.5) // draw road boundary on the far side of the road
 
     }
 
-    drawRoadSegmentLanes(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
+    drawRoadSegmentBoundaries(segmentStart: [Position, Position], segmentEnd: [Position, Position], percentageOfSegment: number, color: string, strokeWidth: number): void {
         // Draw the road markings at thirds across the segment
         //   c                d
         //   se.0            se.1
-        //   +---me1---me2---+
+        //   +-me1-------me2-+
         //   |               |
-        //   +---ms1---ms2---+
+        //   +-ms1-------ms2-+
         //   ss.0           ss.1
         //   a               b
 
-        const msThirdX = ((segmentStart[1].x - segmentStart[0].x) / 3)
-        const msThirdY = ((segmentStart[1].y - segmentStart[0].y) / 3)
+
+        const msPercetangeChunkX = ((segmentStart[1].x - segmentStart[0].x) * percentageOfSegment)
+        const msPercetangeChunkY = ((segmentStart[1].y - segmentStart[0].y) * percentageOfSegment)
         const ms1: Position = {
-            x: segmentStart[0].x + msThirdX,
-            y: segmentStart[0].y + msThirdY
+            x: segmentStart[0].x + msPercetangeChunkX,
+            y: segmentStart[0].y + msPercetangeChunkY
         }
+
         const ms2: Position = {
-            x: segmentStart[0].x + (msThirdX * 2),
-            y: segmentStart[0].y + (msThirdY * 2)
+            x: segmentStart[1].x - msPercetangeChunkX,
+            y: segmentStart[1].y - msPercetangeChunkY
         }
 
 
-        const meThirdX = ((segmentEnd[1].x - segmentEnd[0].x) / 3)
-        const meThirdY = ((segmentEnd[1].y - segmentEnd[0].y) / 3)
+        const mePercetangeChunkX = ((segmentEnd[1].x - segmentEnd[0].x) * percentageOfSegment)
+        const mePercetangeChunkY = ((segmentEnd[1].y - segmentEnd[0].y) * percentageOfSegment)
         const me1: Position = {
-            x: segmentEnd[0].x + meThirdX,
-            y: segmentEnd[0].y + meThirdY
+            x: segmentEnd[0].x + mePercetangeChunkX,
+            y: segmentEnd[0].y + mePercetangeChunkY
         }
         const me2: Position = {
-            x: segmentEnd[0].x + (meThirdX * 2),
-            y: segmentEnd[0].y + (meThirdY * 2)
+            x: segmentEnd[1].x - mePercetangeChunkX,
+            y: segmentEnd[1].y - mePercetangeChunkY
         }
 
         //first third
-        this.drawLine(ms1, me1, this.roadMarkingsColor);
+        this.drawLine(ms1, me1, color, strokeWidth);
 
         //second third
-        this.drawLine(ms2, me2, this.roadMarkingsColor);
+        this.drawLine(ms2, me2, color, strokeWidth);
     }
 
-    drawLine(start: Position, end: Position, color: string): void {
+
+    drawLine(start: Position, end: Position, color: string, strokeWidth: number): void {
         const ctx = this.ctx;
         ctx.strokeStyle = color;
-        ctx.fillStyle = color;
-
+        ctx.lineWidth = strokeWidth;
         ctx.beginPath();
         ctx.lineTo(start.x, start.y);
         ctx.lineTo(end.x, end.y);
