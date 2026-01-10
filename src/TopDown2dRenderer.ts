@@ -17,6 +17,9 @@ export class TopDown2dRenderer {
     // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     readonly initialMapSize: number = 200;
     readonly FPS: number = 120;
+    readonly roadColor = 'gray';
+    readonly roadMarkingsColor = '#ededed';
+
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     gameState: GameState;
@@ -105,23 +108,92 @@ export class TopDown2dRenderer {
         const ctx = this.ctx;
         ctx.beginPath();
 
-        const roadColor = 'gray';
-        ctx.strokeStyle = roadColor;
-        ctx.fillStyle = roadColor;
+        ctx.strokeStyle = this.roadColor;
+        ctx.fillStyle = this.roadColor;
 
-        ctx.lineTo(segmentStart[0].x, segmentStart[0].y);
-        ctx.lineTo(segmentStart[1].x, segmentStart[1].y);
+        // Draw the road segment as a polygon
+        //   c          d
+        //   se.0       se.1
+        //   +-----------+
+        //   |           |
+        //   +-----------+
+        //   ss.0       ss.1
+        //   a          b
+
+        ctx.lineTo(segmentStart[0].x, segmentStart[0].y); // a 
+        ctx.lineTo(segmentStart[1].x, segmentStart[1].y); // b
 
 
-        ctx.lineTo(segmentEnd[1].x, segmentEnd[1].y);
-        ctx.lineTo(segmentEnd[0].x, segmentEnd[0].y);
+        ctx.lineTo(segmentEnd[1].x, segmentEnd[1].y); // d
+        ctx.lineTo(segmentEnd[0].x, segmentEnd[0].y); // c
 
         ctx.closePath();
 
         ctx.stroke();
         ctx.fill();
 
+        this.drawRoadSegmentMarkings(segmentStart, segmentEnd)
     }
+
+    drawRoadSegmentMarkings(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
+
+        this.drawRoadSegmentLanes(segmentStart, segmentEnd)
+
+    }
+
+    drawRoadSegmentLanes(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
+        // Draw the road markings at thirds across the segment
+        //   c                d
+        //   se.0            se.1
+        //   +---me1---me2---+
+        //   |               |
+        //   +---ms1---ms2---+
+        //   ss.0           ss.1
+        //   a               b
+
+        const msThirdX = ((segmentStart[1].x - segmentStart[0].x) / 3)
+        const msThirdY = ((segmentStart[1].y - segmentStart[0].y) / 3)
+        const ms1: Position = {
+            x: segmentStart[0].x + msThirdX,
+            y: segmentStart[0].y + msThirdY
+        }
+        const ms2: Position = {
+            x: segmentStart[0].x + (msThirdX * 2),
+            y: segmentStart[0].y + (msThirdY * 2)
+        }
+
+
+        const meThirdX = ((segmentEnd[1].x - segmentEnd[0].x) / 3)
+        const meThirdY = ((segmentEnd[1].y - segmentEnd[0].y) / 3)
+        const me1: Position = {
+            x: segmentEnd[0].x + meThirdX,
+            y: segmentEnd[0].y + meThirdY
+        }
+        const me2: Position = {
+            x: segmentEnd[0].x + (meThirdX * 2),
+            y: segmentEnd[0].y + (meThirdY * 2)
+        }
+
+        //first third
+        this.drawLine(ms1, me1, this.roadMarkingsColor);
+
+        //second third
+        this.drawLine(ms2, me2, this.roadMarkingsColor);
+    }
+
+    drawLine(start: Position, end: Position, color: string): void {
+        const ctx = this.ctx;
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+
+        ctx.beginPath();
+        ctx.lineTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+
     translateWorldSegmentToCanvas(worldSegment: [Position, Position]): [Position, Position] {
         return [
             this.translateWorldToCanvas(worldSegment[0]),
