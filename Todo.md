@@ -11,7 +11,8 @@ Basic game
 6. ✅ Collision detection if it's off-road => crash = end the game
 7. ✅ gameState gameOver - in renderer
 7. ✅ Scoring based on displacement from start-point
-8. Vehicles on the road
+8. ✅ Refresh button to play again
+9. Vehicles on the road
 
 
 
@@ -20,6 +21,8 @@ Basic game
 1. ✅ 2d renderer isn't squashed
 2. ✅ Renderer that follows the car as it moves past 1000
 3. Road Markings
+4. Fix car drawing of headlights 
+
 
 3d Rendering
 -------------

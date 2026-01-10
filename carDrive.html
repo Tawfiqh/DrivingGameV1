@@ -48,6 +48,23 @@
             transform: translate(-50%, -50%);
         }
 
+        #refreshButton {
+            background-color: orange;
+            color: black;
+            border: 1px solid black;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: darkorange;
+                box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+            }
+        }
     </style>
 </head>
 
@@ -58,6 +75,7 @@
     <div id="gameOver" class="centreDiv">
         <h1> Score: <span id="finalScore">0</span> </h1>
         <h1> Game Over - refresh to play again </h1>
+        <button id="refreshButton" onclick="location.reload()">Refresh</button>
     </div>
 
 </body>

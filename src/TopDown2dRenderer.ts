@@ -51,6 +51,7 @@ export class TopDown2dRenderer {
         this.gameOver.innerHTML = `
             <h1> Score: <span id="finalScore" > ${score} </span> </h1>
                 <h1>Game Over - refresh to play again </h1>
+                <button id="refreshButton" onclick="location.reload()">Refresh</button>
         `
         clearInterval(this.renderLoopInterval) // Cancel the run loop - stop it from updating
     }
