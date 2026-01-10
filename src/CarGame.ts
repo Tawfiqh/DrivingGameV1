@@ -19,13 +19,15 @@ export class GameState {
     trees: Tree[];
     road: Road;
     gameOver: boolean;
+    score: number;
 
 
     constructor() {
-        this.player = new Player(0, 10);
+        this.player = new Player(0, CarGame.startY);
         this.road = []
         this.trees = [];
         this.gameOver = false;
+        this.score = 0;
     }
 
 }
@@ -38,7 +40,7 @@ export class CarGame {
     // x -axis runs from -10 to 10
     readonly xAxisRange: number = 20;
     readonly roadWidth: number = this.xAxisRange / 2;
-
+    static readonly startY: number = 10;
 
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -121,6 +123,16 @@ export class CarGame {
         this.gameState.player.updatePosition(runLoopIntervalMilliseconds / 1000);
         this.checkCollisions();
         this.updateMap();
+        this.updateScore();
+    }
+
+
+    updateScore(): void {
+        let currentY = Math.floor(this.gameState.player.y - CarGame.startY));
+        // currentY = Math.floor(currentY / 10); // divide by 10 to scale the score down a bit.
+
+        this.gameState.score = Math.max(this.gameState.score, currentY);
+        // console.log('🚗🚗 Score: ', this.gameState.score);
     }
 
     checkCollisions(): void {

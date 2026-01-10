@@ -10,7 +10,7 @@ Basic game
 5. ✅ Move to Typescript
 6. ✅ Collision detection if it's off-road => crash = end the game
 7. ✅ gameState gameOver - in renderer
-7. Scoring based on displacement from start-point
+7. ✅ Scoring based on displacement from start-point
 8. Vehicles on the road
 
 

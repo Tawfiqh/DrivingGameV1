@@ -13,14 +13,18 @@ interface CanvasPlayer {
 
 // initialise the renderer
 export class TopDown2dRenderer {
-    initialMapSize: number = 200;
-    FPS: number = 120;
+
+    // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    readonly initialMapSize: number = 200;
+    readonly FPS: number = 120;
+    //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     gameState: GameState;
     ctx: CanvasRenderingContext2D;
     canvas: HTMLCanvasElement;
-    canvasCenterInWorldY: number = 0  // only the Y will adjust to the player's y position
+    canvasCenterInWorldY: number = 0  // Y will adjust to the player's y position
     gameOver: HTMLDivElement;
+    renderLoopInterval: ReturnType<typeof setInterval>;
 
     constructor(gameState: GameState, canvas: HTMLCanvasElement, gameOver: HTMLDivElement) {
         this.gameState = gameState;
@@ -37,42 +41,45 @@ export class TopDown2dRenderer {
         this.canvas.width = this.initialMapSize;
         this.canvas.height = this.initialMapSize;
 
-        setInterval(() => {
+        this.renderLoopInterval = setInterval(() => {
             this.render();
         }, this.FPS / 1000);
     }
 
-    endGameCheck(): void {
-        if (this.gameState.gameOver) {
-            this.gameOver.style.display = 'block';
-            this.gameOver.innerHTML = 'Game Over - refresh to play again';
-        }
+    endGame(score: number): void {
+        this.gameOver.style.display = 'block';
+        this.gameOver.innerHTML = `
+            <h1> Score: <span id="finalScore" > ${score} </span> </h1>
+                <h1>Game Over - refresh to play again </h1>
+        `
+        clearInterval(this.renderLoopInterval) // Cancel the run loop - stop it from updating
     }
 
     render(): void {
         if (this.gameState.gameOver) {
-            this.endGameCheck();
+            this.endGame(this.gameState.score);
+            return
         }
-        else {
-            this.clearCanvas();
-            // Render the world from 0 to 100 on x and y
-            // TBC
 
-            // Debugging - print the position every second
-            // const unixTimestamp = Date.now();
-            // if (unixTimestamp % 1000 == 0) { // every second
-            //     console.log("rendering!", this.gameState.player)
-            // }
 
-            this.updateCanvasCenterInWorld(this.gameState.player.y);
-            this.drawRoad();
+        this.clearCanvas();
 
-            // Draw trees off the road
-            this.renderTrees();
+        this.updateCanvasCenterInWorld(this.gameState.player.y);
+        this.drawRoad();
 
-            // Draw the car at it's position as a box
-            this.drawCar(this.translatedPlayer());
-        }
+        // Draw trees off the road
+        this.renderTrees();
+
+        // Draw the car at it's position as a box
+        this.drawCar(this.translatedPlayer());
+        this.renderScore(this.gameState.score);
+
+    }
+
+    renderScore(score: number): void {
+        this.ctx.font = "24px 'Courier New', Courier, monospace";
+        this.ctx.fillStyle = "greenyellow";
+        this.ctx.fillText("Score: " + score, 10, 30);
     }
 
     updateCanvasCenterInWorld(playerY: number): void {
@@ -241,7 +248,7 @@ export class TopDown2dRenderer {
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
 
-        ctx.ellipse(x, y, radiusX, radiusY, 0, 0, 2 * Math.PI             );
+        ctx.ellipse(x, y, radiusX, radiusY, 0, 0, 2 * Math.PI);
 
         ctx.stroke();
         ctx.fill();
