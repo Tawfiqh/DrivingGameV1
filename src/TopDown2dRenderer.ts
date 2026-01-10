@@ -137,14 +137,21 @@ export class TopDown2dRenderer {
 
     drawRoadSegmentMarkings(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
 
+        // draw Road Segment Lanes
+        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 1 / 3, this.roadMarkingsColor, 1, true)
 
-        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 1 / 3, this.roadMarkingsColor, 1) // draw Road Segment Lanes
-
-        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 0.99, this.roadMarkingsColor, 0.5) // draw road boundary on the far side of the road
+        // draw road boundary on the far side of the road
+        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 0.99, this.roadMarkingsColor, 0.5)
 
     }
 
-    drawRoadSegmentBoundaries(segmentStart: [Position, Position], segmentEnd: [Position, Position], percentageOfSegment: number, color: string, strokeWidth: number): void {
+    drawRoadSegmentBoundaries(
+        segmentStart: [Position, Position],
+        segmentEnd: [Position, Position],
+        percentageOfSegment: number,
+        color: string,
+        strokeWidth: number,
+        dashed: boolean = false): void {
         // Draw the road markings at thirds across the segment
         //   c                d
         //   se.0            se.1
@@ -179,22 +186,32 @@ export class TopDown2dRenderer {
             y: segmentEnd[1].y - mePercetangeChunkY
         }
 
-        //first third
-        this.drawLine(ms1, me1, color, strokeWidth);
+        //first line - at start + percentage of segment
+        this.drawLine(ms1, me1, color, strokeWidth, dashed);
 
-        //second third
-        this.drawLine(ms2, me2, color, strokeWidth);
+        //second line - at (end - percentage) of segment
+        this.drawLine(ms2, me2, color, strokeWidth, dashed);
     }
 
 
-    drawLine(start: Position, end: Position, color: string, strokeWidth: number): void {
+    drawLine(start: Position, end: Position, color: string, strokeWidth: number, dashed: boolean = false): void {
         const ctx = this.ctx;
+
+        if (dashed) {
+            const mainLineLength = 25;
+            const gapLength = 10;
+            const shortLineLength = 1.5;
+            ctx.setLineDash([mainLineLength, gapLength, shortLineLength, gapLength]);
+        }
+        else {
+            ctx.setLineDash([]);
+        }
+
         ctx.strokeStyle = color;
         ctx.lineWidth = strokeWidth;
         ctx.beginPath();
         ctx.lineTo(start.x, start.y);
         ctx.lineTo(end.x, end.y);
-        ctx.closePath();
         ctx.stroke();
     }
 
