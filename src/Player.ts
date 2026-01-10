@@ -20,7 +20,10 @@ export interface PlayerState {
 export class Player {
     // Constants
     velocityIncrement: number = 2;
-    maxVelocity: number = 10;
+    maxVelocity: number = 30;// metres per second
+    // 15mph = 6.7m/s 
+    // 30mph = 13m/s 
+    // 67.1mph = 30m/s 
     maxSteeringAngle: number = 135;
     steeringAngleIncrement: number = 10; // degrees
 

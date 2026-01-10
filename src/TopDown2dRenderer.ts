@@ -20,6 +20,12 @@ export class TopDown2dRenderer {
     readonly roadColor = 'gray';
     readonly roadMarkingsColor = '#ededed';
 
+    readonly playerRoofColor = '#ff4646';
+
+    readonly treeColor = '#535e3b';
+    readonly backgroundColor = '#7a8a26';
+
+
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     gameState: GameState;
@@ -265,7 +271,7 @@ export class TopDown2dRenderer {
     }
 
     drawCar(canvasPlayer: CanvasPlayer): void {
-        //Draw box
+        //Draw main body box
         this.drawRect(
             canvasPlayer.x,
             canvasPlayer.y,
@@ -275,24 +281,47 @@ export class TopDown2dRenderer {
             canvasPlayer.color
         );
 
-        //TBC - Rotate headlights to face the direction of the car properly
+        // Draw the roof of the car
+        const roofScale = 0.67;
         this.drawRect(
-            canvasPlayer.x + canvasPlayer.width / 4,
-            canvasPlayer.y - (canvasPlayer.length / 2),
+            canvasPlayer.x,
+            canvasPlayer.y,
             canvasPlayer.steeringAngle,
-            canvasPlayer.width / 5,
-            canvasPlayer.length / 10,
-            'yellow'
+            canvasPlayer.width * roofScale,
+            canvasPlayer.length * roofScale,
+            this.playerRoofColor
         );
 
-        this.drawRect(
-            canvasPlayer.x - canvasPlayer.width / 4,
-            canvasPlayer.y - (canvasPlayer.length / 2),
-            canvasPlayer.steeringAngle,
-            canvasPlayer.width / 5,
-            canvasPlayer.length / 10,
-            'yellow'
-        );
+
+
+        // Draw headlights positioned at the front of the car, rotated with the car
+        const cos = Math.cos(canvasPlayer.steeringAngle * Math.PI / 180);
+        const sin = Math.sin(canvasPlayer.steeringAngle * Math.PI / 180);
+
+        // One headlight at -1, and one at +1 - so we get a left and right headlight
+        for (let i = -1; i <= 1; i += 2) {
+
+            // Headlight positions in car's local coordinate system (before rotation)
+            // Front of car is at -length/2 in local Y, headlights are at ±width/4 in local X
+            const headlightLocalX = i * canvasPlayer.width / 4;
+            const headlightLocalY = - canvasPlayer.length / 2;
+
+            // Rotate and translate headlight positions to canvas coordinates
+            const headlightX = canvasPlayer.x + (headlightLocalX * cos) - (headlightLocalY * sin);
+            const headlightY = canvasPlayer.y + (headlightLocalX * sin) + (headlightLocalY * cos);
+
+            // Draw headlights rotated to face the car's direction
+            this.drawRect(
+                headlightX,
+                headlightY,
+                canvasPlayer.steeringAngle,
+                canvasPlayer.width / 5,
+                canvasPlayer.length / 10,
+                'yellow'
+            );
+        }
+
+
     }
 
     // Rotate with player direction
@@ -350,7 +379,9 @@ export class TopDown2dRenderer {
     }
 
     clearCanvas(): void {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.ctx.fillStyle = this.backgroundColor;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     renderTrees(): void {
@@ -376,7 +407,7 @@ export class TopDown2dRenderer {
                 canvasPos.y,
                 this.translateLengthOnXAxisToCanvas(tree.radius),
                 this.translateLengthOnYAxisToCanvas(tree.radius),
-                '#228B22' // Forest green color
+                this.treeColor // Forest green color
             );
         }
     }

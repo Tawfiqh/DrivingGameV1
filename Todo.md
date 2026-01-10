@@ -13,15 +13,17 @@ Basic game
 7. ✅ Scoring based on displacement from start-point
 8. ✅ Refresh button to play again
 9. Vehicles on the road
-
+10. Potholes on the road
+10. Display speed
 
 
 2D Rendering
 -------------
 1. ✅ 2d renderer isn't squashed
 2. ✅ Renderer that follows the car as it moves past 1000
-3. Road Markings
-4. Fix car drawing of headlights 
+3. ✅ Road Markings
+4. ✅ Fix car drawing of headlights 
+5. ✅ Cooler background colour - maybe dirt -- not just black
 
 
 3d Rendering
