@@ -1,6 +1,6 @@
 TODO List 
 =========
-
+ss
 Basic game
 ----------
 1. ✅ Basic run loop - updating game state and rendering
@@ -24,7 +24,7 @@ Basic game
 3. ✅ Road Markings
 4. ✅ Fix car drawing of headlights 
 5. ✅ Cooler background colour - maybe dirt -- not just black
-
+6. Show current speed in mph 
 
 3d Rendering
 -------------
@@ -36,4 +36,4 @@ Basic game
 Game mechanics
 -------------
 1. Handle crashes and collisions a bit better -- e.g: reset to the middle of the road with zero velocity OR wipeout completely depending on speed, i.e slow is fine, fast is game-over
-
+2. Time 

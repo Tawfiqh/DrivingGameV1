@@ -78,7 +78,7 @@ export class CarGame {
     setupKeyboardControls(): void {
         // Debounced / throttled keyboard controls
         document.addEventListener('keydown', (event: KeyboardEvent) => {
-            console.log('keydown', event.key);
+            // console.log('⌨️ keydown', event.key);
             switch (event.key) {
                 case 'ArrowUp':
                 case 'w':

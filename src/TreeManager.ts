@@ -195,17 +195,12 @@ export class TreesManager {
         for (let y = minY; y <= maxY; y += 1) {
             for (let roadSide = -1; roadSide <= 1; roadSide += 2) { // -1 for left, 1 for right
                 if (Math.random() < this.treeDensity) {
-
-                    console.log('🌳🌳 generateTree on side', roadSide, y);
-
                     const randomOffset = Math.random() * roadHalfWidth;
                     const x = roadSide * (roadHalfWidth + randomOffset)
                     const size = ((Math.random() - 1) * this.treeSize * 0.8) + this.treeSize;
                     this.gameState.trees.push(new Tree(x, y, size));
                 }
             }
-
-            console.log("\n\n");
         }
     }
 }
