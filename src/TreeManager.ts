@@ -1,5 +1,6 @@
 import { GameState } from './CarGame.js';
-import { Tree, EnvironmentObject } from './EnvironmentObjects.js';
+import { Tree } from './Tree.js';
+import { EnvironmentObject } from './EnvironmentObjects.js';
 
 export class EnvironmentObjectManager {
     // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

@@ -2,8 +2,9 @@ import { Player, DIRECTIONS, Direction } from './Player.js';
 import { TreesManager } from './TreeManager.js';
 import { RoadManager, Road } from './RoadManager.js';
 import { VehiclesManager } from './VehiclesManager.js';
-import { Vehicle } from './VehiclesManager.js';
-import { EnvironmentObject, Tree } from './EnvironmentObjects.js';
+import { Vehicle } from './Vehicle.js';
+import { EnvironmentObject } from './EnvironmentObjects.js';
+import { Tree } from './Tree.js';
 
 
 export interface Position {
@@ -186,8 +187,12 @@ export class CarGame {
         if (closeObjects.length > 0) {
             console.log('🌳🌳 Checking closeObjects', closeObjects.length, "/", objectsToCheck.length);
             for (let object of closeObjects) {
+
                 let objectHasCollided = object.checkCollisionWithPlayerDetailed(this.gameState.player)
-                if (objectHasCollided) { return true }
+                if (objectHasCollided) {
+                    console.log('❌❌❌Object has collided -- gamer over ❌', object, this.gameState.player);
+                    return true
+                }
             }
         }
 

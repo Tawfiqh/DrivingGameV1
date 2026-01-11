@@ -1,4 +1,4 @@
-import { Vehicle } from './VehiclesManager.js';
+import { Vehicle } from './Vehicle.js';
 
 // Direction constants
 export const DIRECTIONS = {
