@@ -1,25 +1,42 @@
 import { GameState } from './CarGame.js';
 import { Player } from './Player.js';
 
-export interface EnvironmentObject {
+export class EnvironmentObject {
     x: number;
     y: number;
+
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+
+    // Checks if the x and y are even possibly close
+    checkBasicCollision(player: Player, playerMaxSize: number): boolean {
+        return this.y > player.y - playerMaxSize
+            && this.y < player.y + playerMaxSize
+            && this.x > player.x - playerMaxSize
+            && this.x < player.x + playerMaxSize
+    }
+
+    checkCollisionWithPlayerDetailed(player: Player): boolean {
+        return false
+    }
+
 }
 
-export class Tree implements EnvironmentObject {
-    x: number;
-    y: number;
+export class Tree extends EnvironmentObject {
+
     radius: number = 1;
 
     constructor(x: number, y: number, radius: number = 1) {
-        this.x = x;
-        this.y = y;
+        super(x, y);
+
         this.radius = radius;
     }
 
 
     // TBC - this could be a generic method for all environment objects (e.g. trees, vehicles, etc.)
-    checkCollisionWithPlayer(player: Player): boolean {
+    checkCollisionWithPlayerDetailed(player: Player): boolean {
         // SAT (Separating Axis Theorem) collision detection between rotated rectangle and circle
         // https://www.sevenson.com.au/programming/sat/
 

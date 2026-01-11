@@ -3,7 +3,7 @@ import { TreesManager } from './TreeManager.js';
 import { RoadManager, Road } from './RoadManager.js';
 import { VehiclesManager } from './VehiclesManager.js';
 import { Vehicle } from './VehiclesManager.js';
-import { Tree } from './EnvironmentObjects.js';
+import { EnvironmentObject, Tree } from './EnvironmentObjects.js';
 
 
 export interface Position {
@@ -159,48 +159,39 @@ export class CarGame {
     }
 
     checkCollisions(): void {
-        // TBC - check for collisions with the road and trees
-        // Check for collisions with trees
+
+        // Check for collisions with the road and trees
+        const objectListsToCheck = [this.gameState.trees, this.gameState.vehicles];
 
         const playerMaxSize = Math.max(this.gameState.player.width, this.gameState.player.length) * 1.5; // add buffer to the player's size
-        let treeHasCollided = this.checkTreeCollisions(playerMaxSize);
-        if (treeHasCollided) {
-            this.endGame();
-            return
-        }
 
-        let vehicleHasCollided = this.checkVehicleCollisions(playerMaxSize);
-        if (vehicleHasCollided) {
-            this.endGame();
-            return
+        for (let objectList of objectListsToCheck) {
+
+            // Check for collisions in the list of objects
+            const anyCollidedObjects = this.checkCollisionsInList(playerMaxSize, objectList);
+            if (anyCollidedObjects) {
+                this.endGame();
+                return
+            }
         }
 
     }
 
+    checkCollisionsInList(playerMaxSize: number, objectsToCheck: EnvironmentObject[]): boolean {
 
-    checkVehicleCollisions(playerMaxSize: number): boolean {
-
-        return false; // TBC - implement this
-
-    }
-
-    checkTreeCollisions(playerMaxSize: number): boolean {
-        const closeTrees = this.gameState.trees.filter(tree =>
-            tree.y > this.gameState.player.y - playerMaxSize
-            && tree.y < this.gameState.player.y + playerMaxSize
-            && tree.x > this.gameState.player.x - playerMaxSize
-            && tree.x < this.gameState.player.x + playerMaxSize
+        const closeObjects = objectsToCheck.filter(
+            object => object.checkBasicCollision(this.gameState.player, playerMaxSize)
         );
 
-        if (closeTrees.length > 0) {
-            console.log('🌳🌳 Checvking closeTrees', closeTrees.length, "/", this.gameState.trees.length);
-            for (let tree of closeTrees) {
-                let treeHasCollided = tree.checkCollisionWithPlayer(this.gameState.player)
-                if (treeHasCollided) { return true }
+        if (closeObjects.length > 0) {
+            console.log('🌳🌳 Checking closeObjects', closeObjects.length, "/", objectsToCheck.length);
+            for (let object of closeObjects) {
+                let objectHasCollided = object.checkCollisionWithPlayerDetailed(this.gameState.player)
+                if (objectHasCollided) { return true }
             }
-
         }
-        return false;
+
+        return false
 
     }
 

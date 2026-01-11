@@ -16,7 +16,7 @@ Basic game
     - Vary by percentage
     - ✅ Adjust size
     - Add collisions
-    - Change colours of cars!
+    - Change colours of car roofs!
     - Keep them in the lanes
 
 10. Potholes on the road

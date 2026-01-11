@@ -5,11 +5,8 @@ import { EnvironmentObject } from './EnvironmentObjects.js';
 import { varyNumberByPercentage, randomShadeOfBlue } from './Helpers.js';
 
 
-export class Vehicle implements EnvironmentObject {
-    x: number;
-    y: number;
-    radius: number;
-
+export class Vehicle extends EnvironmentObject {
+    
     width: number;
     length: number;
     color: string;
@@ -25,9 +22,7 @@ export class Vehicle implements EnvironmentObject {
         steeringAngle: number = 0,
         velocity: number = 10) {
 
-        this.x = x;
-        this.y = y;
-        this.radius = Math.max(width, length) / 2;
+        super(x, y);
         this.width = width;
         this.length = length;
         this.color = color;
