@@ -1,7 +1,9 @@
 import { Player, DIRECTIONS, Direction } from './Player.js';
-import { TreesManager, Tree } from './TreeManager.js';
+import { TreesManager } from './TreeManager.js';
 import { RoadManager, Road } from './RoadManager.js';
-
+import { VehiclesManager } from './VehiclesManager.js';
+import { Vehicle } from './VehiclesManager.js';
+import { Tree } from './EnvironmentObjects.js';
 
 
 export interface Position {
@@ -17,6 +19,7 @@ export class GameState {
 
     player: Player;
     trees: Tree[];
+    vehicles: Vehicle[];
     road: Road;
     gameOver: boolean;
     score: number;
@@ -26,6 +29,7 @@ export class GameState {
         this.player = new Player(0, CarGame.startY);
         this.road = []
         this.trees = [];
+        this.vehicles = [];
         this.gameOver = false;
         this.score = 0;
     }
@@ -47,6 +51,7 @@ export class CarGame {
     gameState!: GameState;
     treesManager!: TreesManager;
     roadManager!: RoadManager;
+    vehiclesManager!: VehiclesManager;
 
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     private runLoopInterval!: ReturnType<typeof setInterval>;
@@ -68,6 +73,7 @@ export class CarGame {
 
         this.roadManager = new RoadManager(this.gameState, this.roadWidth);
         this.treesManager = new TreesManager(this.gameState);
+        this.vehiclesManager = new VehiclesManager(this.gameState);
 
         this.updateMap(); // trees and road are updated here    
 
@@ -114,21 +120,38 @@ export class CarGame {
 
     setupGameRunLoop(): void {
         this.runLoopInterval = setInterval(() => {
-            this.runLoop(this.runLoopIntervalMilliseconds);
+            this.gameRunLoop(this.runLoopIntervalMilliseconds);
         }, this.runLoopIntervalMilliseconds);
     }
 
 
-    runLoop(runLoopIntervalMilliseconds: number): void {
-        this.gameState.player.updatePosition(runLoopIntervalMilliseconds / 1000);
+    gameRunLoop(runLoopIntervalMilliseconds: number): void {
+        this.updatePlayer(runLoopIntervalMilliseconds);
+        this.updateMap(runLoopIntervalMilliseconds); // Update any foliage, enemies, road etc 
+
+
         this.checkCollisions();
-        this.updateMap();
-        this.updateScore();
+
+        this.updateScore(); // do this last - after collisions are checked
+    }
+
+    updatePlayer(runLoopIntervalMilliseconds: number): void {
+        this.gameState.player.updatePosition(runLoopIntervalMilliseconds / 1000);
+    }
+
+    updateMap(runLoopIntervalMilliseconds: number = 0): void {
+        this.roadManager.updateRoad();
+        this.vehiclesManager.updateVehicles(runLoopIntervalMilliseconds / 1000);
+
+        this.treesManager.updateTrees(); // this requires a road to be present -- so it can put trees either side of the road
+
+        // TBC - update other map elements
+        // e.g. vehicles on the road
     }
 
 
     updateScore(): void {
-        let currentY = Math.floor(this.gameState.player.y - CarGame.startY));
+        let currentY = Math.floor(this.gameState.player.y - CarGame.startY);
         // currentY = Math.floor(currentY / 10); // divide by 10 to scale the score down a bit.
 
         this.gameState.score = Math.max(this.gameState.score, currentY);
@@ -140,7 +163,28 @@ export class CarGame {
         // Check for collisions with trees
 
         const playerMaxSize = Math.max(this.gameState.player.width, this.gameState.player.length) * 1.5; // add buffer to the player's size
+        let treeHasCollided = this.checkTreeCollisions(playerMaxSize);
+        if (treeHasCollided) {
+            this.endGame();
+            return
+        }
 
+        let vehicleHasCollided = this.checkVehicleCollisions(playerMaxSize);
+        if (vehicleHasCollided) {
+            this.endGame();
+            return
+        }
+
+    }
+
+
+    checkVehicleCollisions(playerMaxSize: number): boolean {
+
+        return false; // TBC - implement this
+
+    }
+
+    checkTreeCollisions(playerMaxSize: number): boolean {
         const closeTrees = this.gameState.trees.filter(tree =>
             tree.y > this.gameState.player.y - playerMaxSize
             && tree.y < this.gameState.player.y + playerMaxSize
@@ -152,25 +196,19 @@ export class CarGame {
             console.log('🌳🌳 Checvking closeTrees', closeTrees.length, "/", this.gameState.trees.length);
             for (let tree of closeTrees) {
                 let treeHasCollided = tree.checkCollisionWithPlayer(this.gameState.player)
-                if (treeHasCollided) { this.endGame() }
+                if (treeHasCollided) { return true }
             }
 
         }
+        return false;
+
     }
+
 
     endGame() {
         console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=🚗🚗 Game Over 🚗🚗  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=');
         clearInterval(this.runLoopInterval) // Cancel the run loop - stop it from updating
         this.gameState.gameOver = true;
-    }
-
-    updateMap(): void {
-        this.roadManager.updateRoad();
-
-        this.treesManager.updateTrees(); // this requires a road to be present -- so it can put trees either side of the road
-
-        // TBC - update other map elements
-        // e.g. vehicles on the road
     }
 
 

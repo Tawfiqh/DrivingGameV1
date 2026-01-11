@@ -13,9 +13,14 @@ Basic game
 7. ✅ Scoring based on displacement from start-point
 8. ✅ Refresh button to play again
 9. Vehicles on the road
-10. Potholes on the road
-10. Display speed
+    - Vary by percentage
+    - ✅ Adjust size
+    - Add collisions
+    - Change colours of cars!
+    - Keep them in the lanes
 
+10. Potholes on the road
+11. Dynamic road that keeps extending to infinity -- can use the environmentObjectManager
 
 2D Rendering
 -------------
@@ -25,6 +30,9 @@ Basic game
 4. ✅ Fix car drawing of headlights 
 5. ✅ Cooler background colour - maybe dirt -- not just black
 6. Show current speed in mph 
+7. Mobile support - for controls
+8. Add car headlights 
+
 
 3d Rendering
 -------------

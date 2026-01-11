@@ -1,8 +1,8 @@
 import { GameState, Position } from './CarGame.js';
-import { Tree } from './TreeManager.js';
 
+import { Vehicle } from './VehiclesManager.js';
 
-interface CanvasPlayer {
+interface CanvasVehicle {
     x: number;
     y: number;
     steeringAngle: number;
@@ -77,11 +77,14 @@ export class TopDown2dRenderer {
         this.updateCanvasCenterInWorld(this.gameState.player.y);
         this.drawRoad();
 
+        // Draw vehicles on the road
+        this.renderVehicles();
+
         // Draw trees off the road
         this.renderTrees();
 
         // Draw the car at it's position as a box
-        this.drawCar(this.translatedPlayer());
+        this.drawCar(this.translatedVehicle(this.gameState.player));
         this.renderScore(this.gameState.score);
 
     }
@@ -253,24 +256,22 @@ export class TopDown2dRenderer {
 
     // Translate the player to the canvas coordinates
     // This is because the player is in world coordinates, but the canvas is in canvas coordinates
-    translatedPlayer(): CanvasPlayer {
+    translatedVehicle(vehicle: Vehicle): CanvasVehicle {
 
-        let translatedWidth = this.translateLengthOnXAxisToCanvas(this.gameState.player.width)
-        let translatedLength = this.translateLengthOnYAxisToCanvas(this.gameState.player.length)
-        let translatedCenter = this.translateWorldToCanvas(this.gameState.player)
-
+        let translatedCenter = this.translateWorldToCanvas(vehicle)
 
         return {
             x: translatedCenter.x,
             y: translatedCenter.y,
-            steeringAngle: this.gameState.player.steeringAngle,
-            width: translatedWidth,
-            length: translatedLength,
-            color: this.gameState.player.color
+            steeringAngle: vehicle.steeringAngle,
+            width: this.translateLengthOnXAxisToCanvas(vehicle.width),
+            length: this.translateLengthOnYAxisToCanvas(vehicle.length),
+            color: vehicle.color
         };
+
     }
 
-    drawCar(canvasPlayer: CanvasPlayer): void {
+    drawCar(canvasPlayer: CanvasVehicle): void {
         //Draw main body box
         this.drawRect(
             canvasPlayer.x,
@@ -289,7 +290,7 @@ export class TopDown2dRenderer {
             canvasPlayer.steeringAngle,
             canvasPlayer.width * roofScale,
             canvasPlayer.length * roofScale,
-            this.playerRoofColor
+            this.playerRoofColor //TBC - make this a function of the car color
         );
 
 
@@ -411,5 +412,14 @@ export class TopDown2dRenderer {
             );
         }
     }
+
+    renderVehicles(): void {
+        // Render all vehicles in the game state
+        for (const vehicle of this.gameState.vehicles) {
+            this.drawCar(this.translatedVehicle(vehicle));
+        }
+    }
+
 }
+
 
