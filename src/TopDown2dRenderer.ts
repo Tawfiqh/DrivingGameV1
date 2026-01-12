@@ -16,14 +16,14 @@ interface CanvasVehicle {
 export class TopDown2dRenderer {
 
     // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    readonly initialMapSize: number = 200;
+    readonly scaleFactor = 10;
+    readonly initialMapSize: number = 200 * this.scaleFactor;
     readonly FPS: number = 120;
     readonly roadColor = 'gray';
     readonly roadMarkingsColor = '#ededed';
 
     readonly treeColor = '#535e3b';
     readonly backgroundColor = '#7a8a26';
-
 
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -89,13 +89,17 @@ export class TopDown2dRenderer {
     }
 
     renderScore(score: number): void {
-        this.ctx.font = "24px 'Courier New', Courier, monospace";
+        const fontSize = 12 * this.scaleFactor;
+        this.ctx.font = fontSize + "px 'Courier New', Courier, monospace";
         this.ctx.fillStyle = "greenyellow";
-        this.ctx.fillText("Score: " + score, 10, 30);
+
+        const xPos = 10 * this.scaleFactor;
+        const yPos = 15 * this.scaleFactor;
+        this.ctx.fillText("Score: " + score, xPos, yPos);
     }
 
     updateCanvasCenterInWorld(playerY: number): void {
-        const yOffset = this.gameState.player.length;
+        const yOffset = this.gameState.player.length; // yOffset is to adjust for the player being at the bottom centre of the screen
         this.canvasCenterInWorldY = playerY - yOffset
     }
 
@@ -112,11 +116,17 @@ export class TopDown2dRenderer {
 
     }
 
+
     drawRoadSegment(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
+        this.drawRoadSegmentRoad(segmentStart, segmentEnd);
+        this.drawRoadSegmentMarkings(segmentStart, segmentEnd);
+    }
+
+    drawRoadSegmentRoad(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
         const ctx = this.ctx;
         ctx.beginPath();
 
-        ctx.strokeStyle = this.roadColor;
+
         ctx.fillStyle = this.roadColor;
 
         // Draw the road segment as a polygon
@@ -137,19 +147,17 @@ export class TopDown2dRenderer {
 
         ctx.closePath();
 
-        ctx.stroke();
         ctx.fill();
 
-        this.drawRoadSegmentMarkings(segmentStart, segmentEnd)
     }
 
     drawRoadSegmentMarkings(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
 
         // draw Road Segment Lanes
-        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 1 / 3, this.roadMarkingsColor, 1, true)
+        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 1 / 3, this.roadMarkingsColor, 0.75, true)
 
         // draw road boundary on the far side of the road
-        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 0.99, this.roadMarkingsColor, 0.5)
+        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 0.99, this.roadMarkingsColor, 0.25)
 
     }
 
@@ -206,9 +214,9 @@ export class TopDown2dRenderer {
         const ctx = this.ctx;
 
         if (dashed) {
-            const mainLineLength = 25;
-            const gapLength = 10;
-            const shortLineLength = 1.5;
+            const mainLineLength = 25 * this.scaleFactor;
+            const gapLength = 10 * this.scaleFactor;
+            const shortLineLength = 1.5 * this.scaleFactor;
             ctx.setLineDash([mainLineLength, gapLength, shortLineLength, gapLength]);
         }
         else {
@@ -216,7 +224,7 @@ export class TopDown2dRenderer {
         }
 
         ctx.strokeStyle = color;
-        ctx.lineWidth = strokeWidth;
+        ctx.lineWidth = strokeWidth * this.scaleFactor;
         ctx.beginPath();
         ctx.lineTo(start.x, start.y);
         ctx.lineTo(end.x, end.y);
@@ -249,7 +257,7 @@ export class TopDown2dRenderer {
             // World Y: 0..10
             // Canvas Y: 0..MapHeight
             // Y should be at the bottom of the canvas
-            y: this.initialMapSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.initialMapSize),
+            y: (this.initialMapSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.initialMapSize)),
         };
     }
 
@@ -355,14 +363,12 @@ export class TopDown2dRenderer {
     drawCircle(x: number, y: number, radius: number, color: string): void {
         const ctx = this.ctx;
         ctx.beginPath();
-        ctx.strokeStyle = color;
         ctx.fillStyle = color;
         ctx.arc(
             x,
             y,
             radius,
             0, 2 * Math.PI);
-        ctx.stroke();
         ctx.fill();
     }
 
@@ -370,12 +376,10 @@ export class TopDown2dRenderer {
         const ctx = this.ctx;
         ctx.beginPath();
 
-        ctx.strokeStyle = color;
         ctx.fillStyle = color;
 
         ctx.ellipse(x, y, radiusX, radiusY, 0, 0, 2 * Math.PI);
 
-        ctx.stroke();
         ctx.fill();
     }
 

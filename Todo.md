@@ -15,10 +15,10 @@ Basic game
 9. ✅ Vehicles on the road
 10. ✅ Add vehicle collisions
 11. ✅ Make collisions more efficient by not recalculating vertices all the time
-12. Change colours of car roofs! + - Variance on car speed too!    
-13. Dynamic road that keeps extending to infinity -- can use the environmentObjectManager
-14. Mobile support - for controls
-15.
+12. ✅ Change colours of car roofs! + - Variance on car speed too!    
+13. No cars at spawn point i.e < 50y
+14. Dynamic road that keeps extending to infinity -- can use the environmentObjectManager
+15. Mobile support - for controls
 // Ready to launch
 
 16. Keep cars in the lanes
@@ -31,8 +31,8 @@ Basic game
 3. ✅ Road Markings
 4. ✅ Fix car drawing of headlights 
 5. ✅ Cooler background colour - maybe dirt -- not just black
-6. Show current speed in mph 
-7. Add scale factor back in
+6. ✅ Add scale factor back in
+7. Show current speed in mph 
 
 
 3d Rendering
