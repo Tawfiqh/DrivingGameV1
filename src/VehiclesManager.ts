@@ -45,7 +45,7 @@ export class VehiclesManager extends EnvironmentObjectManager {
                         varyNumberByPercentage(length, 0.2),
                         randomShadeOfBlue(),
                         0,
-                        10 //TBC - random velocity between 10 and 20
+                        varyNumberByPercentage(15, 0.333) // Random velocity between 10 and 20
                     );
 
                     this.gameState.vehicles.push(newVehicle);
