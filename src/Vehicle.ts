@@ -81,8 +81,25 @@ export class Vehicle extends EnvironmentObject {
         // console.log('UPDATEdddd Position:', this.x, this.y);
     }
 
-    getVertices(): Vector[] { // The vertices are the corners of the vehicle
-        // Step 1: Calculate the four corners of the rotated rectangle
+
+    getCollisionObject(): VehicleCollisionObject {
+        return new VehicleCollisionObject(this);
+    }
+}
+
+
+export class VehicleCollisionObject extends Vehicle {
+    vertices: Vector[];
+    axes: Vector[];
+
+    constructor(vehicle: Vehicle) {
+        super(vehicle.x, vehicle.y, vehicle.width, vehicle.length, vehicle.color, vehicle.steeringAngle, vehicle.velocity);
+        this.vertices = this.calculateVertices();
+        this.axes = this.calculateAxes();
+    }
+
+    calculateVertices(): Vector[] { // The vertices are the corners of the vehicle
+        console.log('🚗🚗 calculateVertices🚗', this.steeringAngle);
         const angle = this.steeringAngle * Math.PI / 180; // Convert to radians
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
@@ -110,11 +127,11 @@ export class Vehicle extends EnvironmentObject {
         return worldCorners;
     }
 
-    getAxes(): Vector[] { // The axes are the normals of each shape’s edges.
+    calculateAxes(): Vector[] { // The axes are the normals of each shape’s edges.
 
         const axes: Vector[] = [];
 
-        const vertices: Vector[] = this.getVertices();
+        const vertices: Vector[] = this.vertices;
 
         // loop over the vertices
         for (let i = 0; i < vertices.length; i++) {
@@ -140,7 +157,7 @@ export class Vehicle extends EnvironmentObject {
 
 
     project(axis: Vector): Projection {
-        const vertices: Vector[] = this.getVertices();
+        const vertices: Vector[] = this.vertices;
 
         let min: number = axis.dot(vertices[0]);
         let max: number = min;
@@ -157,13 +174,14 @@ export class Vehicle extends EnvironmentObject {
         return new Projection(min, max);
     }
 
+
     //TBC - should just do the player calculations once 
     // pass in a collisionPlayer object that has the axes, vertices, etc.
-    checkCollisionWithPlayerDetailed(player: Player): boolean {
+    checkCollisionWithPlayerDetailed(player: VehicleCollisionObject): boolean {
         // SAT (Separating Axis Theorem) collision detection between polygons
         // https://dyn4j.org/2010/01/sat/
-        const axes1: Vector[] = player.getAxes();
-        const axes2: Vector[] = this.getAxes();
+        const axes1: Vector[] = player.axes;
+        const axes2: Vector[] = this.axes;
 
         const axes: Vector[] = [...axes1, ...axes2] // get the axes to test;
 
@@ -173,7 +191,7 @@ export class Vehicle extends EnvironmentObject {
             let axis: Vector = axes[i];
 
             // project both shapes onto the axis
-            const p1: Projection = player.project(axis); //tbc implement
+            const p1: Projection = player.project(axis); //TBC these can be stored for the player object as it will be reprojected for each of the player's axes
             const p2: Projection = this.project(axis);
 
             // do the projections overlap?
@@ -188,4 +206,3 @@ export class Vehicle extends EnvironmentObject {
 
     }
 }
-

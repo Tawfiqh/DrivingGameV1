@@ -2,7 +2,7 @@ import { Player, DIRECTIONS, Direction } from './Player.js';
 import { TreesManager } from './TreeManager.js';
 import { RoadManager, Road } from './RoadManager.js';
 import { VehiclesManager } from './VehiclesManager.js';
-import { Vehicle } from './Vehicle.js';
+import { Vehicle, VehicleCollisionObject } from './Vehicle.js';
 import { EnvironmentObject } from './EnvironmentObjects.js';
 import { Tree } from './Tree.js';
 
@@ -131,7 +131,7 @@ export class CarGame {
         this.updateMap(runLoopIntervalMilliseconds); // Update any foliage, enemies, road etc 
 
 
-        this.checkCollisions();
+        this.checkAllCollisions();
 
         this.updateScore(); // do this last - after collisions are checked
     }
@@ -159,17 +159,17 @@ export class CarGame {
         // console.log('🚗🚗 Score: ', this.gameState.score);
     }
 
-    checkCollisions(): void {
+    checkAllCollisions(): void {
 
         // Check for collisions with the road and trees
         const objectListsToCheck = [this.gameState.trees, this.gameState.vehicles];
 
-        const playerMaxSize = Math.max(this.gameState.player.width, this.gameState.player.length) * 1.5; // add buffer to the player's size
 
         for (let objectList of objectListsToCheck) {
 
             // Check for collisions in the list of objects
-            const anyCollidedObjects = this.checkCollisionsInList(playerMaxSize, objectList);
+            const anyCollidedObjects = this.checkCollisionsInList(this.gameState.player, objectList);
+
             if (anyCollidedObjects) {
                 this.endGame();
                 return
@@ -178,19 +178,39 @@ export class CarGame {
 
     }
 
-    checkCollisionsInList(playerMaxSize: number, objectsToCheck: EnvironmentObject[]): boolean {
+    checkCollisionsInList(player: Player, objectsToCheck: EnvironmentObject[]): boolean {
+
+        // Player Max Size is used to quickly calculate if an object is even close to player
+        const playerMaxSize = Math.max(player.width, player.length) * 1.5; // add buffer to the player's size
 
         const closeObjects = objectsToCheck.filter(
-            object => object.checkBasicCollision(this.gameState.player, playerMaxSize)
+            object => object.checkObjectIsCloseToPlayer(player, playerMaxSize)
         );
 
         if (closeObjects.length > 0) {
-            console.log('🌳🌳 Checking closeObjects', closeObjects.length, "/", objectsToCheck.length);
+            console.log('🌳🚗 Checking closeObjects for collisions', closeObjects.length, "/", objectsToCheck.length);
+
+            // Get collision object for the player
+            let playerCollissionObject: VehicleCollisionObject = player.getCollisionObject();
+            // this is a snapshot of the player's position and orientation at the time of the check
+            // with vertices and axes calculated for fast collision detection using SAT
+            // Calculate this once before the for loop -- and only calculate it if there are closeObjects to check
+
+
             for (let object of closeObjects) {
 
-                let objectHasCollided = object.checkCollisionWithPlayerDetailed(this.gameState.player)
+                // We get a collision object, it's a snapshot of the object
+                //  but in a representation that is easier to check for collisions
+                let objectHasCollided = object.getCollisionObject().checkCollisionWithPlayerDetailed(playerCollissionObject)
+
+                // For Trees the collisionObject is just the base object
+                // For Vehicles the collisionObject is a VehicleCollisionObject with vertices and axes calculated for fast collision detection using SAT
+                // Both use SAT but Trees calculate it based on a circle and the Vehicle calculates it based on a rotated rectangle
+                // Trees could be simplified as a lot of the same calculations are repeated for each tree
+
+
                 if (objectHasCollided) {
-                    console.log('❌❌❌Object has collided -- gamer over ❌', object, this.gameState.player);
+                    console.log('❌❌❌Object has collided -- gamer over ❌', object, player);
                     return true
                 }
             }

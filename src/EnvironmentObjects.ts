@@ -1,5 +1,6 @@
 import { GameState } from './CarGame.js';
 import { Player } from './Player.js';
+import { VehicleCollisionObject } from './Vehicle.js';
 
 export class EnvironmentObject {
     x: number;
@@ -11,7 +12,7 @@ export class EnvironmentObject {
     }
 
     // Checks if the x and y are even possibly close
-    checkBasicCollision(player: Player, playerMaxSize: number): boolean {
+    checkObjectIsCloseToPlayer(player: Player, playerMaxSize: number): boolean {
         // Check y first as this is most likely to fail first
         // As the player is moving fast along the y-axis with sparse objects sharing a y-value
         return this.y > player.y - playerMaxSize
@@ -20,8 +21,12 @@ export class EnvironmentObject {
             && this.x < player.x + playerMaxSize
     }
 
-    checkCollisionWithPlayerDetailed(player: Player): boolean {
-        return false
+    checkCollisionWithPlayerDetailed(player: VehicleCollisionObject): boolean {
+        return false //Subclasses should implement this for fine-grained collision detection
+    }
+
+    getCollisionObject(): EnvironmentObject {
+        return this
     }
 
 }

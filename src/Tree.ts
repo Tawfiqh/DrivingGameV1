@@ -1,5 +1,6 @@
 import { Player } from './Player.js';
 import { EnvironmentObject } from './EnvironmentObjects.js';
+import { VehicleCollisionObject } from './Vehicle.js';
 
 export class Tree extends EnvironmentObject {
 
@@ -13,7 +14,7 @@ export class Tree extends EnvironmentObject {
 
 
     // TBC - this could be a generic method for all environment objects (e.g. trees, vehicles, etc.)
-    checkCollisionWithPlayerDetailed(player: Player): boolean {
+    checkCollisionWithPlayerDetailed(player: VehicleCollisionObject): boolean {
         // SAT (Separating Axis Theorem) collision detection between rotated rectangle and circle
         // https://www.sevenson.com.au/programming/sat/
 
