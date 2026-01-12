@@ -188,7 +188,7 @@ export class CarGame {
         );
 
         if (closeObjects.length > 0) {
-            console.log('🌳🚗 Checking closeObjects for collisions', closeObjects.length, "/", objectsToCheck.length);
+            console.log('\n\n🌳🚗 Checking closeObjects for collisions', closeObjects.length, "/", objectsToCheck.length);
 
             // Get collision object for the player
             let playerCollissionObject: VehicleCollisionObject = player.getCollisionObject();

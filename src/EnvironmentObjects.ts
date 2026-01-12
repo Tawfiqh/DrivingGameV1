@@ -5,10 +5,12 @@ import { VehicleCollisionObject } from './Vehicle.js';
 export class EnvironmentObject {
     x: number;
     y: number;
+    name: string;
 
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number, name: string = "") {
         this.x = x;
         this.y = y;
+        this.name = name;
     }
 
     // Checks if the x and y are even possibly close

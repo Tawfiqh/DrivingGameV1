@@ -12,15 +12,17 @@ Basic game
 7. ✅ gameState gameOver - in renderer
 7. ✅ Scoring based on displacement from start-point
 8. ✅ Refresh button to play again
-9. Vehicles on the road
-    - ✅ Adjust size
-    - Add collisions
-    - Change colours of car roofs!
-    - Keep them in the lanes
-    - variance on car speed too!
-    - make collisions more efficient by not recalculating vertices all the time
-10. Potholes on the road
-11. Dynamic road that keeps extending to infinity -- can use the environmentObjectManager
+9. ✅ Vehicles on the road
+10. ✅ Add vehicle collisions
+11. ✅ Make collisions more efficient by not recalculating vertices all the time
+12. Change colours of car roofs! + - Variance on car speed too!    
+13. Dynamic road that keeps extending to infinity -- can use the environmentObjectManager
+14. Mobile support - for controls
+15.
+// Ready to launch
+
+16. Keep cars in the lanes
+17. Potholes on the road
 
 2D Rendering
 -------------
@@ -30,7 +32,7 @@ Basic game
 4. ✅ Fix car drawing of headlights 
 5. ✅ Cooler background colour - maybe dirt -- not just black
 6. Show current speed in mph 
-7. Mobile support - for controls
+7. Add scale factor back in
 
 
 3d Rendering

@@ -23,7 +23,10 @@ export class Player extends Vehicle {
     // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     constructor(initialX: number = 0, initialY: number = 10, width: number = 1.5, length: number = 1.75, color: string = 'red') {
-        super(initialX, initialY, width, length, color, 0, 0);
+        const initialSteeringAngle = 0
+        const initialVelocity = 0
+        const objectName = "playerName"
+        super(initialX, initialY, width, length, color, initialSteeringAngle, initialVelocity, objectName);
     }
 
     adjustSteering(direction: Direction): void {

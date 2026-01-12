@@ -11,6 +11,10 @@ class Vector { //same as a Position but can do some calculations by using the cl
         this.y = y;
     }
 
+    toString(): string {
+        return `x:${this.x},y:${this.y}`;
+    }
+
 
     // subtract
     subtract(other: Vector): Vector {
@@ -59,9 +63,10 @@ export class Vehicle extends EnvironmentObject {
         length: number,
         color: string,
         steeringAngle: number = 0,
-        velocity: number = 10) {
+        velocity: number = 10,
+        name: string = "Vehicle") {
 
-        super(x, y);
+        super(x, y, name);
         this.width = width;
         this.length = length;
         this.color = color;
@@ -93,13 +98,12 @@ export class VehicleCollisionObject extends Vehicle {
     axes: Vector[];
 
     constructor(vehicle: Vehicle) {
-        super(vehicle.x, vehicle.y, vehicle.width, vehicle.length, vehicle.color, vehicle.steeringAngle, vehicle.velocity);
+        super(vehicle.x, vehicle.y, vehicle.width, vehicle.length, vehicle.color, vehicle.steeringAngle, vehicle.velocity, vehicle.name);
         this.vertices = this.calculateVertices();
         this.axes = this.calculateAxes();
     }
 
     calculateVertices(): Vector[] { // The vertices are the corners of the vehicle
-        console.log('🚗🚗 calculateVertices🚗', this.steeringAngle);
         const angle = this.steeringAngle * Math.PI / 180; // Convert to radians
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
@@ -124,6 +128,7 @@ export class VehicleCollisionObject extends Vehicle {
             }
         );
 
+        // console.log('🚗🚗 calculateVertices🚗', worldCorners.length);
         return worldCorners;
     }
 
@@ -155,15 +160,30 @@ export class VehicleCollisionObject extends Vehicle {
 
     }
 
+    // Commented out as not that much recomputation actually happens - so the cache doesn't help much
+    // this is a cache of the projections for the axes
+    // computedProjections: Map<string, Projection> = new Map();
+
+    // checkProjectionAlreadyExistsFor(axis: Vector): Projection | undefined {
+    //     return this.computedProjections.get(axis.toString()) as Projection | undefined;
+    // }
 
     project(axis: Vector): Projection {
+
+        // const existingProjection = this.checkProjectionAlreadyExistsFor(axis)
+        // if (existingProjection) {
+        //     console.log('📈✅ Projection already exists for axis', axis.toString(), "on ", this.name);
+        //     return existingProjection
+        // }
+        // console.log('📈❌ Projection does not exist for axis', axis.toString(), "on ", this.name);
+
         const vertices: Vector[] = this.vertices;
 
         let min: number = axis.dot(vertices[0]);
         let max: number = min;
 
         for (let i = 1; i < vertices.length; i++) {
-            // NOTE: the axis must be normalized to get accurate projections
+            // NOTE: the axis must be normalized to get accurate projections for MTV -- not needed in this simple use case
             const dotP: number = axis.dot(vertices[i]);
             if (dotP < min) {
                 min = dotP;
@@ -171,7 +191,14 @@ export class VehicleCollisionObject extends Vehicle {
                 max = dotP;
             }
         }
-        return new Projection(min, max);
+
+        const projection = new Projection(min, max);
+
+        // // cache this projection for the axis
+        // console.log('📈💾 Caching projection for axis', axis.toString(), this.name);
+        // this.computedProjections.set(axis.toString(), projection);
+
+        return projection;
     }
 
 

@@ -7,7 +7,7 @@ export class Tree extends EnvironmentObject {
     radius: number = 1;
 
     constructor(x: number, y: number, radius: number = 1) {
-        super(x, y);
+        super(x, y, "🌳");
 
         this.radius = radius;
     }
