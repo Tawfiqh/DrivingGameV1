@@ -15,6 +15,7 @@ export class Player extends Vehicle {
     // Constants
     velocityIncrement: number = 2;
     maxVelocity: number = 30;// metres per second
+    static defaultColor: string = 'rgb(225, 40, 0)'; // Ferrari Red
     // 15mph = 6.7m/s 
     // 30mph = 13m/s 
     // 67.1mph = 30m/s 
@@ -22,7 +23,7 @@ export class Player extends Vehicle {
     steeringAngleIncrement: number = 10; // degrees
     // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    constructor(initialX: number = 0, initialY: number = 10, width: number = 1.5, length: number = 1.75, color: string = 'red') {
+    constructor(initialX: number = 0, initialY: number = 10, width: number = 1.5, length: number = 1.75, color: string = Player.defaultColor) {
         const initialSteeringAngle = 0
         const initialVelocity = 0
         const objectName = "playerName"

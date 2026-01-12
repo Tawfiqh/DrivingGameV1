@@ -1,6 +1,6 @@
 import { GameState, Position } from './CarGame.js';
-
-import { Vehicle } from './VehiclesManager.js';
+import { lightenColor } from './Helpers.js';
+import { Vehicle } from './Vehicle.js';
 
 interface CanvasVehicle {
     x: number;
@@ -9,6 +9,7 @@ interface CanvasVehicle {
     width: number;
     length: number;
     color: string;
+    lighterColor: string;
 }
 
 // initialise the renderer
@@ -19,8 +20,6 @@ export class TopDown2dRenderer {
     readonly FPS: number = 120;
     readonly roadColor = 'gray';
     readonly roadMarkingsColor = '#ededed';
-
-    readonly playerRoofColor = '#ff4646';
 
     readonly treeColor = '#535e3b';
     readonly backgroundColor = '#7a8a26';
@@ -266,7 +265,8 @@ export class TopDown2dRenderer {
             steeringAngle: vehicle.steeringAngle,
             width: this.translateLengthOnXAxisToCanvas(vehicle.width),
             length: this.translateLengthOnYAxisToCanvas(vehicle.length),
-            color: vehicle.color
+            color: vehicle.color,
+            lighterColor: vehicle.lighterColor
         };
 
     }
@@ -290,7 +290,7 @@ export class TopDown2dRenderer {
             canvasPlayer.steeringAngle,
             canvasPlayer.width * roofScale,
             canvasPlayer.length * roofScale,
-            this.playerRoofColor //TBC - make this a function of the car color
+            canvasPlayer.lighterColor
         );
 
 

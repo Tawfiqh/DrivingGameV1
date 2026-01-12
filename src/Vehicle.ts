@@ -1,6 +1,7 @@
 import { EnvironmentObject } from './EnvironmentObjects.js';
 import { Player } from './Player.js';
 import { Position } from './CarGame.js';
+import { lightenColor } from './Helpers.js';
 
 class Vector { //same as a Position but can do some calculations by using the class
     x: number;
@@ -53,6 +54,7 @@ export class Vehicle extends EnvironmentObject {
     width: number;
     length: number;
     color: string;
+    lighterColor: string;
     steeringAngle: number; // how far has the user turned the steering wheel (away from 0 degrees which is straight ahead)
     velocity: number; // how fast is the car going (Meters per second)
 
@@ -70,6 +72,7 @@ export class Vehicle extends EnvironmentObject {
         this.width = width;
         this.length = length;
         this.color = color;
+        this.lighterColor = lightenColor(color);
         this.steeringAngle = steeringAngle;
         this.velocity = velocity;
     }
