@@ -17,8 +17,7 @@ Basic game
 11. ✅ Make collisions more efficient by not recalculating vertices all the time
 12. ✅ Change colours of car roofs! + - Variance on car speed too!    
 13. ✅ No cars at spawn point i.e < 50y
-14. Dynamic road that keeps extending to infinity -- can use the environmentObjectManager -- and can also drive backwards off the road
-    - Sort while inserting
+14. ✅ Dynamic road that keeps extending to infinity -- can use the environmentObjectManager -- and can also drive backwards off the road
 15. Mobile support - for controls
 
 // Ready to launch

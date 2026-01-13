@@ -1,5 +1,6 @@
 import { GameState, Position } from './CarGame.js';
 import { EnvironmentObjectManager } from './EnvironmentObjectManager.js';
+import { pushSorted } from './Helpers.js';
 
 export type RoadSegment = [Position, Position];
 export type Road = RoadSegment[];
@@ -26,16 +27,17 @@ export class RoadManager extends EnvironmentObjectManager {
                     { x: -this.roadWidth / 2, y: y },
                     { x: this.roadWidth / 2, y: y }
                 ]
-            this.gameState.road.push(newRoadSegment);
+            pushSorted(
+                this.gameState.road,
+                newRoadSegment,
+                (seg1: RoadSegment, seg2: RoadSegment) => seg1[0].y - seg2[0].y // compare the y-values of the first positions of the road segments
+            );
+
         }
 
-        this.gameState.road.sort((a, b) => a[0].y - b[0].y);
-        // TBC THIS IS EXPENSIVE - don't sort if possible
-        // Should jsut keep the array sorted as we add new segments
-
-        // const firstRoadSegment = this.gameState.road[0];
-        // const lastRoadSegment = this.gameState.road[this.gameState.road.length - 1];
-        // console.log('🛣 generating road from', minY, 'to', maxY, `Road: ${firstRoadSegment[0].y} --> ${lastRoadSegment[1].y}`);
+        const firstRoadSegment = this.gameState.road[0];
+        const lastRoadSegment = this.gameState.road[this.gameState.road.length - 1];
+        console.log('🛣 generating road from', minY, 'to', maxY, `Road: ${firstRoadSegment[0].y} --> ${lastRoadSegment[1].y}`);
 
     }
 

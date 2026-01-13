@@ -141,14 +141,13 @@ export class CarGame {
     }
 
     updateMap(runLoopIntervalMilliseconds: number = 0): void {
-        this.roadManager.updateRoad();
+        this.roadManager.updateRoad(); // do this first 
+        // as the other methods require a road to be present so they can place cars on the road and trees by the side of the road
 
         this.vehiclesManager.updateVehicles(runLoopIntervalMilliseconds / 1000);
 
         this.treesManager.updateTrees(); // this requires a road to be present -- so it can put trees either side of the road
 
-        // TBC - update other map elements
-        // e.g. vehicles on the road
     }
 
 
