@@ -142,6 +142,7 @@ export class CarGame {
 
     updateMap(runLoopIntervalMilliseconds: number = 0): void {
         this.roadManager.updateRoad();
+
         this.vehiclesManager.updateVehicles(runLoopIntervalMilliseconds / 1000);
 
         this.treesManager.updateTrees(); // this requires a road to be present -- so it can put trees either side of the road

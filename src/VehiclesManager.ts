@@ -1,4 +1,4 @@
-import { EnvironmentObjectManager } from './TreeManager.js';
+import { EnvironmentObjectManager } from './EnvironmentObjectManager.js';
 import { varyNumberByPercentage, randomShadeOfBlue } from './Helpers.js';
 import { Vehicle } from './Vehicle.js';
 
@@ -64,14 +64,16 @@ export class VehiclesManager extends EnvironmentObjectManager {
     }
 
 
-    generateVehiclesInRange(minY: number, maxY: number, roadHalfWidth: number): void {
+    generateVehiclesInRange(minY: number, maxY: number): void {
         console.log('🚗🚗 generateVehiclesInRange🚗', minY, maxY);
+
+        const roadHalfWidth = this.calculateRoadWidth() / 2;
 
         for (let y = minY; y <= maxY; y += 1) {
             for (let roadSide = -1; roadSide <= 1; roadSide += 2) { // -1 for left, 1 for right
                 if (Math.random() < this.carDensityPerYUnit(y)) {
-                    const randomOffset = Math.random() * roadHalfWidth;
-                    const x = roadSide * (roadHalfWidth - randomOffset)
+                    const randomOffsetWithinRoadWidth = Math.random() * roadHalfWidth;
+                    const x = roadSide * randomOffsetWithinRoadWidth
 
                     const width = varyNumberByPercentage(this.baseCarSize, 0.2); // add some variance to the base car size
                     let length = width * 1.2;

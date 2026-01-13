@@ -18,11 +18,14 @@ Basic game
 12. ✅ Change colours of car roofs! + - Variance on car speed too!    
 13. ✅ No cars at spawn point i.e < 50y
 14. Dynamic road that keeps extending to infinity -- can use the environmentObjectManager -- and can also drive backwards off the road
+    - Sort while inserting
 15. Mobile support - for controls
-// Ready to launch
 
-16. Keep cars in the lanes
+// Ready to launch
+16. Cool dynamics where the steering adjusts over a timeperiod -- so it doesn't instantly change your steering angle but slowly increments/animates it over a time-period -- this would also give rise to new driving dynamics, more natural
+16. Keep cars in the lanes - and not colliding with each other
 17. Potholes on the road
+18. vary size of road as it goes on
 
 2D Rendering
 -------------
