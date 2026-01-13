@@ -106,19 +106,49 @@ export class CarGame {
             }
         });
 
-        // TBC - touch controls -- can migrate from pacman later
-        // document.addEventListener('touchstart', e => {
-        //     this.touchstartX = e.changedTouches[0].screenX
-        //     this.touchstartY = e.changedTouches[0].screenY
-        // })
+        document.addEventListener('touchstart', e => {
+            this.touchstartX = e.changedTouches[0].screenX
+            this.touchstartY = e.changedTouches[0].screenY
+        })
 
-        // document.addEventListener('touchend', e => {
-        //     this.touchendX = e.changedTouches[0].screenX
-        //     this.touchendY = e.changedTouches[0].screenY
-        //     this.checkSwipeDirection()
-        // })
+        document.addEventListener('touchend', e => {
+            this.touchendX = e.changedTouches[0].screenX
+            this.touchendY = e.changedTouches[0].screenY
+            this.checkSwipeDirection()
+        })
     }
+    // Mobile Touch logic -Source - https://stackoverflow.com/a/56663695
+    // Posted by Damjan Pavlica, modified by community. See post 'Timeline' for change history
+    // Retrieved 2025-12-25, License - CC BY-SA 4.0
+    touchstartX = 0
+    touchendX = 0
 
+    touchstartY = 0
+    touchendY = 0
+
+    checkSwipeDirection() {
+
+        let xMovement = this.touchendX - this.touchstartX
+        let yMovement = this.touchendY - this.touchstartY
+
+        const horizontalSwipe = Math.abs(xMovement) > Math.abs(yMovement)
+
+        if (horizontalSwipe) { // More horizontal movement than vertical movement
+            const rightSideSwipe = xMovement > 0
+            if (rightSideSwipe) {
+                this.gameState.player.adjustSteering(DIRECTIONS.RIGHT);
+            } else {
+                this.gameState.player.adjustSteering(DIRECTIONS.LEFT);
+            }
+        } else { // verticalSwipe = More vertical movement than horizontal movement
+            const downSideSwipe = yMovement > 0 // remember that y-axis is inverted for a canvas
+            if (downSideSwipe) {
+                this.gameState.player.adjustVelocity(DIRECTIONS.DOWN);
+            } else {
+                this.gameState.player.adjustVelocity(DIRECTIONS.UP);
+            }
+        }
+    }
     setupGameRunLoop(): void {
         this.runLoopInterval = setInterval(() => {
             this.gameRunLoop(this.runLoopIntervalMilliseconds);
