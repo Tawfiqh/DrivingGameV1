@@ -8,6 +8,14 @@
             --main-color: red;
         }
 
+        html,
+        body {
+            /* this is to prevent the page from scrolling when playing on mobile */
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
         body {
             background-color: black;
             font-family: Arial, sans-serif;
@@ -78,6 +86,13 @@
         <button id="refreshButton" onclick="location.reload()">Refresh</button>
     </div>
 
+    <div class="instructions-container">
+        <div class="instructions">
+            <!-- <h2>Instructions</h2> -->
+            <p>Use the arrow-keys/WASD to move. On mobile swipe up/down to accelerate and left/right to steer.
+            </p>
+        </div>
+    </div>
 </body>
 
 <script type="module">
