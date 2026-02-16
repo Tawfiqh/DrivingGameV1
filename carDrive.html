@@ -120,7 +120,7 @@
             <p>Use the arrow-keys/WASD to move. On mobile swipe up/down to accelerate and left/right to steer.</p>
             <div class="view-toggle">
                 <span class="view-label">View:</span>
-                <button type="button" id="view2d" class="view-btn active" aria-pressed="true">2D</button>
+                <button type="button" id="view2d" class="view-btn" aria-pressed="false">2D</button>
                 <button type="button" id="view3d" class="view-btn" aria-pressed="false">3D</button>
             </div>
         </div>
@@ -142,31 +142,40 @@
     import { Chase3dRenderer } from './dist/Chase3dRenderer.js';
     import { CarGame } from './dist/CarGame.js';
 
+    // Helper functions for the 3d/2d toggle buttons
+    function resetAllButtons() {
+        function resetActiveButton(button) {
+            button.classList.remove('active');
+            button.setAttribute('aria-pressed', 'false');
+        }
+
+        resetActiveButton(view2d);
+        resetActiveButton(view3d);
+    }
+
+    function setActiveButton(button) {
+        button.classList.add('active');
+        button.setAttribute('aria-pressed', 'true');
+    }
+
+    function toggleView(view, button) {
+        if (currentRenderer.constructor !== view) {
+            currentRenderer.stop();
+            currentRenderer = new view(carGame.gameState, gameCanvas, gameOver);
+        }
+        resetAllButtons();
+        setActiveButton(button);
+    }
+
+    view3d.addEventListener('click', () => toggleView(Chase3dRenderer, view3d));
+    view2d.addEventListener('click', () => toggleView(TopDown2dRenderer, view2d));
+
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    // Game initialisation
     const carGame = new CarGame();
-    let currentRenderer = new TopDown2dRenderer(carGame.gameState, gameCanvas, gameOver);
 
-    const view2d = document.getElementById('view2d');
-    const view3d = document.getElementById('view3d');
+    // Start with 3D view
+    let currentRenderer = { stop: () => { }, start: () => { } };
+    toggleView(Chase3dRenderer, view3d);
 
-    view2d.addEventListener('click', () => {
-        if (currentRenderer.constructor !== TopDown2dRenderer) {
-            currentRenderer.stop();
-            currentRenderer = new TopDown2dRenderer(carGame.gameState, gameCanvas, gameOver);
-        }
-        view2d.classList.add('active');
-        view2d.setAttribute('aria-pressed', 'true');
-        view3d.classList.remove('active');
-        view3d.setAttribute('aria-pressed', 'false');
-    });
-
-    view3d.addEventListener('click', () => {
-        if (currentRenderer.constructor !== Chase3dRenderer) {
-            currentRenderer.stop();
-            currentRenderer = new Chase3dRenderer(carGame.gameState, gameCanvas, gameOver);
-        }
-        view3d.classList.add('active');
-        view3d.setAttribute('aria-pressed', 'true');
-        view2d.classList.remove('active');
-        view2d.setAttribute('aria-pressed', 'false');
-    });
 </script>
