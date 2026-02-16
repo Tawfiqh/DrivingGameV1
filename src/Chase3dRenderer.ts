@@ -265,12 +265,12 @@ export class Chase3dRenderer {
 
         // Simple perspective: scale down with distance (further ahead = smaller)
         const depth = worldPosition.y - this.canvasCenterInWorldY;
-        const perspectiveScale = 1 / (1 + Math.max(0, depth) * 0.08); //TBC - fix this!!
+        const perspectiveScale = (1 + Math.max(0, depth) * 0.08); //TBC - fix this!!
 
         const centerX = this.initialMapSize / 2;
         return {
-            x: centerX + (x - centerX) * perspectiveScale,
-            y: this.initialMapSize - (this.initialMapSize - y) * perspectiveScale,
+            x: centerX + ((x - centerX) / perspectiveScale),
+            y: this.initialMapSize - ((this.initialMapSize - y) / perspectiveScale),
         };
 
 
