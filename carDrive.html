@@ -73,11 +73,59 @@
                 box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
             }
         }
+
+        .view-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .view-label {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .view-btn {
+            background: #333;
+            color: #ccc;
+            border: 1px solid #555;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .view-btn:hover {
+            background: #444;
+            color: white;
+            border-color: greenyellow;
+        }
+
+        .view-btn.active {
+            background: greenyellow;
+            color: black;
+            border-color: greenyellow;
+        }
     </style>
 </head>
 
 <body>
     <h1>Car Drive</h1>
+    <div class="instructions-container">
+        <div class="instructions">
+            <!-- <h2>Instructions</h2> -->
+            <p>Use the arrow-keys/WASD to move. On mobile swipe up/down to accelerate and left/right to steer.</p>
+            <div class="view-toggle">
+                <span class="view-label">View:</span>
+                <button type="button" id="view2d" class="view-btn active" aria-pressed="true">2D</button>
+                <button type="button" id="view3d" class="view-btn" aria-pressed="false">3D</button>
+            </div>
+        </div>
+    </div>
+
     <canvas id="gameCanvas" class="centreDiv"></canvas>
 
     <div id="gameOver" class="centreDiv">
@@ -86,19 +134,39 @@
         <button id="refreshButton" onclick="location.reload()">Refresh</button>
     </div>
 
-    <div class="instructions-container">
-        <div class="instructions">
-            <!-- <h2>Instructions</h2> -->
-            <p>Use the arrow-keys/WASD to move. On mobile swipe up/down to accelerate and left/right to steer.
-            </p>
-        </div>
-    </div>
+
 </body>
 
 <script type="module">
     import { TopDown2dRenderer } from './dist/TopDown2dRenderer.js';
+    import { Chase3dRenderer } from './dist/Chase3dRenderer.js';
     import { CarGame } from './dist/CarGame.js';
 
     const carGame = new CarGame();
-    const renderer = new TopDown2dRenderer(carGame.gameState, gameCanvas, gameOver);
+    let currentRenderer = new TopDown2dRenderer(carGame.gameState, gameCanvas, gameOver);
+
+    const view2d = document.getElementById('view2d');
+    const view3d = document.getElementById('view3d');
+
+    view2d.addEventListener('click', () => {
+        if (currentRenderer.constructor !== TopDown2dRenderer) {
+            currentRenderer.stop();
+            currentRenderer = new TopDown2dRenderer(carGame.gameState, gameCanvas, gameOver);
+        }
+        view2d.classList.add('active');
+        view2d.setAttribute('aria-pressed', 'true');
+        view3d.classList.remove('active');
+        view3d.setAttribute('aria-pressed', 'false');
+    });
+
+    view3d.addEventListener('click', () => {
+        if (currentRenderer.constructor !== Chase3dRenderer) {
+            currentRenderer.stop();
+            currentRenderer = new Chase3dRenderer(carGame.gameState, gameCanvas, gameOver);
+        }
+        view3d.classList.add('active');
+        view3d.setAttribute('aria-pressed', 'true');
+        view2d.classList.remove('active');
+        view2d.setAttribute('aria-pressed', 'false');
+    });
 </script>

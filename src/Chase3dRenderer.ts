@@ -13,7 +13,7 @@ interface CanvasVehicle {
 }
 
 // initialise the renderer
-export class TopDown2dRenderer {
+export class Chase3dRenderer {
 
     // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     readonly scaleFactor = 10;
@@ -252,17 +252,29 @@ export class TopDown2dRenderer {
     }
 
     translateWorldToCanvas(worldPosition: Position): Position {
-        return {
-            // X=0 should be centered on the canvas
-            // World X: -10 .. 10 => 0 .. 20 => 0..10 //assumption is that the world x is only between -10 and 10
-            // Canvas X: 0..MapWidth
-            x: (worldPosition.x + 10) / 20 * this.initialMapSize,
 
-            // World Y: 0..10
-            // Canvas Y: 0..MapHeight
-            // Y should be at the bottom of the canvas
-            y: (this.initialMapSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.initialMapSize)),
+        // X=0 should be centered on the canvas
+        // World X: -10 .. 10 => 0 .. 20 => 0..10 //assumption is that the world x is only between -10 and 10
+        // Canvas X: 0..MapWidth
+        const x = (worldPosition.x + 10) / 20 * this.initialMapSize;
+
+        // World Y: 0..10
+        // Canvas Y: 0..MapHeight
+        // Y should be at the bottom of the canvas
+        const y = (this.initialMapSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.initialMapSize));
+
+        // Simple perspective: scale down with distance (further ahead = smaller)
+        const depth = worldPosition.y - this.canvasCenterInWorldY;
+        const perspectiveScale = 1 / (1 + Math.max(0, depth) * 0.08); //TBC - fix this!!
+
+        const centerX = this.initialMapSize / 2;
+        return {
+            x: centerX + (x - centerX) * perspectiveScale,
+            y: this.initialMapSize - (this.initialMapSize - y) * perspectiveScale,
         };
+
+
+
     }
 
     // Translate the player to the canvas coordinates
