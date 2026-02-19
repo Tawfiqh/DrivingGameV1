@@ -2,7 +2,7 @@ import { GameState, Position } from './CarGame.js';
 
 export class EnvironmentObjectManager {
     // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    static readonly viewDistance: number = 200;
+    static readonly viewDistance: number = 300;
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     viewDistance: number;

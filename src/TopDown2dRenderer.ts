@@ -258,7 +258,7 @@ export class TopDown2dRenderer {
             // Canvas X: 0..MapWidth
             x: (worldPosition.x + 10) / 20 * this.initialMapSize,
 
-            // World Y: 0..10
+            // World Y: 0..10 (displayed on screen)
             // Canvas Y: 0..MapHeight
             // Y should be at the bottom of the canvas
             y: (this.initialMapSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.initialMapSize)),
@@ -398,17 +398,6 @@ export class TopDown2dRenderer {
         // let i = 0
         for (const tree of this.gameState.trees) {
             const canvasPos = this.translateWorldToCanvas({ x: tree.x, y: tree.y });
-            // console.log('🌳🌳 renderTrees🌳', tree, "@:", canvasPos);
-
-            // if (i ==0 ){
-            //    console.log('🌳🌳 drawEllipse🌳',
-            //      this.translateLengthOnXAxisToCanvas(tree.radius), 
-            //      this.translateLengthOnYAxisToCanvas(tree.radius)
-            //      , canvasPos.x, canvasPos.y
-            //     );
-            //    i++;
-            // }
-
 
             // Tree foliage
             this.drawEllipse(
