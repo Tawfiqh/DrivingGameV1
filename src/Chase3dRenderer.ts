@@ -17,7 +17,7 @@ export class Chase3dRenderer {
 
     // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     readonly scaleFactor = 10;
-    readonly initialMapSize: number = 200 * this.scaleFactor;
+    readonly canvasSize: number = 200 * this.scaleFactor;
     readonly FPS: number = 120;
     readonly roadColor = 'gray';
     readonly roadMarkingsColor = '#ededed';
@@ -46,8 +46,8 @@ export class Chase3dRenderer {
 
         // set width and height to initial map-size
         this.canvas = canvas; // used for clearing
-        this.canvas.width = this.initialMapSize;
-        this.canvas.height = this.initialMapSize;
+        this.canvas.width = this.canvasSize;
+        this.canvas.height = this.canvasSize;
 
         this.renderLoopInterval = setInterval(() => {
             this.render();
@@ -252,25 +252,37 @@ export class Chase3dRenderer {
     }
 
     translateWorldToCanvas(worldPosition: Position): Position {
+        // return {
+        //     // X=0 should be centered on the canvas
+        //     // World X: -10 .. 10 => 0 .. 20 => 0..10 //assumption is that the world x is only between -10 and 10
+        //     // Canvas X: 0..MapWidth
+        //     x: (worldPosition.x + 10) / 20 * this.canvasSize,
+
+        //     // World Y: 0..10
+        //     // Canvas Y: 0..MapHeight
+        //     // Y should be at the bottom of the canvas
+        //     y: (this.canvasSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.canvasSize)),
+        // };
 
         // X=0 should be centered on the canvas
         // World X: -10 .. 10 => 0 .. 20 => 0..10 //assumption is that the world x is only between -10 and 10
         // Canvas X: 0..MapWidth
-        const x = (worldPosition.x + 10) / 20 * this.initialMapSize;
+        const x = (worldPosition.x + 10) / 20 * this.canvasSize;
 
         // World Y: 0..10
         // Canvas Y: 0..MapHeight
         // Y should be at the bottom of the canvas
-        const y = (this.initialMapSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.initialMapSize));
+        const y = (this.canvasSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.canvasSize));
 
         // Simple perspective: scale down with distance (further ahead = smaller)
         const depth = worldPosition.y - this.canvasCenterInWorldY;
-        const perspectiveScale = (1 + Math.max(0, depth) * 0.08); //TBC - fix this!!
+        const perspectiveScale = (1 + Math.max(0, depth) * 0.2);
 
-        const centerX = this.initialMapSize / 2;
+        const centerX = this.canvasSize / 2;
+        const centerY = this.canvasSize / 2;
         return {
             x: centerX + ((x - centerX) / perspectiveScale),
-            y: this.initialMapSize - ((this.initialMapSize - y) / perspectiveScale),
+            y: centerY - ((centerY - y) / perspectiveScale),
         };
 
 
