@@ -45,7 +45,7 @@ export class Chase3dRenderer extends TopDown2dRenderer {
 
 
         const yOffset = worldPosition.y - this.canvasCenterInWorldY // 0 .. 10 (assuming onscreen)
-        const yPerspectiveScaled = yOffset * scale
+        const yPerspectiveScaled = yOffset * scale * 5
         const yWithPerspectiveAndTilt = yPerspectiveScaled * tiltFactor
 
         const horizon = (this.canvasSize * horizonAnchorScaling)
