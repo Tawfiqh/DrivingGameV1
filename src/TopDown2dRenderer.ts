@@ -1,8 +1,8 @@
 import { GameState, Position } from './CarGame.js';
-import { lightenColor } from './Helpers.js';
 import { Vehicle } from './Vehicle.js';
+import { BaseRenderer } from './BaseRenderer.js';
 
-interface CanvasVehicle {
+export interface CanvasVehicle {
     x: number;
     y: number;
     steeringAngle: number;
@@ -13,59 +13,20 @@ interface CanvasVehicle {
 }
 
 // initialise the renderer
-export class TopDown2dRenderer {
+export class TopDown2dRenderer extends BaseRenderer {
 
     // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    readonly scaleFactor = 10;
-    readonly initialMapSize: number = 200 * this.scaleFactor;
-    readonly FPS: number = 120;
     readonly roadColor = 'gray';
     readonly roadMarkingsColor = '#ededed';
 
     readonly treeColor = '#535e3b';
     readonly backgroundColor = '#7a8a26';
-
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    gameState: GameState;
-    ctx: CanvasRenderingContext2D;
-    canvas: HTMLCanvasElement;
     canvasCenterInWorldY: number = 0  // Y will adjust to the player's y position
-    gameOver: HTMLDivElement;
-    renderLoopInterval: ReturnType<typeof setInterval>;
 
     constructor(gameState: GameState, canvas: HTMLCanvasElement, gameOver: HTMLDivElement) {
-        this.gameState = gameState;
-        this.gameOver = gameOver;
-
-        const context = canvas.getContext("2d");
-        if (!context) {
-            throw new Error("Could not get 2d context from canvas");
-        }
-        this.ctx = context;
-
-        // set width and height to initial map-size
-        this.canvas = canvas; // used for clearing
-        this.canvas.width = this.initialMapSize;
-        this.canvas.height = this.initialMapSize;
-
-        this.renderLoopInterval = setInterval(() => {
-            this.render();
-        }, this.FPS / 1000);
-    }
-
-    stop(): void {
-        clearInterval(this.renderLoopInterval);
-    }
-
-    endGame(score: number): void {
-        this.gameOver.style.display = 'block';
-        this.gameOver.innerHTML = `
-            <h1> Score: <span id="finalScore" > ${score} </span> </h1>
-                <h1>Game Over - refresh to play again </h1>
-                <button id="refreshButton" onclick="location.reload()">Refresh</button>
-        `
-        this.stop();
+        super(gameState, canvas, gameOver);
     }
 
     render(): void {
@@ -74,8 +35,7 @@ export class TopDown2dRenderer {
             return
         }
 
-
-        this.clearCanvas();
+        this.canvas.clearCanvas(this.backgroundColor);
 
         this.updateCanvasCenterInWorld(this.gameState.player.y);
         this.drawRoad();
@@ -92,15 +52,7 @@ export class TopDown2dRenderer {
 
     }
 
-    renderScore(score: number): void {
-        const fontSize = 12 * this.scaleFactor;
-        this.ctx.font = fontSize + "px 'Courier New', Courier, monospace";
-        this.ctx.fillStyle = "greenyellow";
 
-        const xPos = 10 * this.scaleFactor;
-        const yPos = 15 * this.scaleFactor;
-        this.ctx.fillText("Score: " + score, xPos, yPos);
-    }
 
     updateCanvasCenterInWorld(playerY: number): void {
         const yOffset = this.gameState.player.length; // yOffset is to adjust for the player being at the bottom centre of the screen
@@ -127,11 +79,8 @@ export class TopDown2dRenderer {
     }
 
     drawRoadSegmentRoad(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
-        const ctx = this.ctx;
-        ctx.beginPath();
 
 
-        ctx.fillStyle = this.roadColor;
 
         // Draw the road segment as a polygon
         //   c          d
@@ -141,19 +90,9 @@ export class TopDown2dRenderer {
         //   +-----------+
         //   ss.0       ss.1
         //   a          b
-
-        ctx.lineTo(segmentStart[0].x, segmentStart[0].y); // a 
-        ctx.lineTo(segmentStart[1].x, segmentStart[1].y); // b
-
-
-        ctx.lineTo(segmentEnd[1].x, segmentEnd[1].y); // d
-        ctx.lineTo(segmentEnd[0].x, segmentEnd[0].y); // c
-
-        ctx.closePath();
-
-        ctx.fill();
-
+        this.canvas.drawQuadrilateral(segmentStart[0], segmentStart[1], segmentEnd[1], segmentEnd[0], this.roadColor);
     }
+
 
     drawRoadSegmentMarkings(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
 
@@ -207,33 +146,13 @@ export class TopDown2dRenderer {
         }
 
         //first line - at start + percentage of segment
-        this.drawLine(ms1, me1, color, strokeWidth, dashed);
+        this.canvas.drawLine(ms1, me1, color, strokeWidth, dashed);
 
         //second line - at (end - percentage) of segment
-        this.drawLine(ms2, me2, color, strokeWidth, dashed);
+        this.canvas.drawLine(ms2, me2, color, strokeWidth, dashed);
     }
 
 
-    drawLine(start: Position, end: Position, color: string, strokeWidth: number, dashed: boolean = false): void {
-        const ctx = this.ctx;
-
-        if (dashed) {
-            const mainLineLength = 25 * this.scaleFactor;
-            const gapLength = 10 * this.scaleFactor;
-            const shortLineLength = 1.5 * this.scaleFactor;
-            ctx.setLineDash([mainLineLength, gapLength, shortLineLength, gapLength]);
-        }
-        else {
-            ctx.setLineDash([]);
-        }
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = strokeWidth * this.scaleFactor;
-        ctx.beginPath();
-        ctx.lineTo(start.x, start.y);
-        ctx.lineTo(end.x, end.y);
-        ctx.stroke();
-    }
 
 
     translateWorldSegmentToCanvas(worldSegment: [Position, Position]): [Position, Position] {
@@ -285,7 +204,7 @@ export class TopDown2dRenderer {
 
     drawCar(canvasPlayer: CanvasVehicle): void {
         //Draw main body box
-        this.drawRect(
+        this.canvas.drawRect(
             canvasPlayer.x,
             canvasPlayer.y,
             canvasPlayer.steeringAngle,
@@ -296,7 +215,7 @@ export class TopDown2dRenderer {
 
         // Draw the roof of the car
         const roofScale = 0.67;
-        this.drawRect(
+        this.canvas.drawRect(
             canvasPlayer.x,
             canvasPlayer.y,
             canvasPlayer.steeringAngle,
@@ -324,7 +243,7 @@ export class TopDown2dRenderer {
             const headlightY = canvasPlayer.y + (headlightLocalX * sin) + (headlightLocalY * cos);
 
             // Draw headlights rotated to face the car's direction
-            this.drawRect(
+            this.canvas.drawRect(
                 headlightX,
                 headlightY,
                 canvasPlayer.steeringAngle,
@@ -337,61 +256,6 @@ export class TopDown2dRenderer {
 
     }
 
-    // Rotate with player direction
-    drawRect(x: number, y: number, rotation: number, width: number, length: number, color: string): void {
-        // Save the current canvas state - e.g the state it uses to draw
-        this.ctx.save();
-
-
-        // Translate to the center point of the rectangle
-        this.ctx.translate(x, y);
-
-        // Rotate around the center
-        this.ctx.rotate(rotation * Math.PI / 180); // Convert rotation from degrees to radians 
-
-        // Set fill style
-        this.ctx.fillStyle = color;
-
-        // Draw rectangle centered at (0, 0) relative to the center point
-        this.ctx.fillRect(
-            -width / 2,
-            -length / 2,
-            width,
-            length
-        );
-
-        // Restore the canvas state to prevent transformations from accumulating
-        this.ctx.restore();
-    }
-
-    drawCircle(x: number, y: number, radius: number, color: string): void {
-        const ctx = this.ctx;
-        ctx.beginPath();
-        ctx.fillStyle = color;
-        ctx.arc(
-            x,
-            y,
-            radius,
-            0, 2 * Math.PI);
-        ctx.fill();
-    }
-
-    drawEllipse(x: number, y: number, radiusX: number, radiusY: number, color: string): void {
-        const ctx = this.ctx;
-        ctx.beginPath();
-
-        ctx.fillStyle = color;
-
-        ctx.ellipse(x, y, radiusX, radiusY, 0, 0, 2 * Math.PI);
-
-        ctx.fill();
-    }
-
-    clearCanvas(): void {
-
-        this.ctx.fillStyle = this.backgroundColor;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    }
 
     renderTrees(): void {
         // Render all trees in the game state
@@ -400,7 +264,7 @@ export class TopDown2dRenderer {
             const canvasPos = this.translateWorldToCanvas({ x: tree.x, y: tree.y });
 
             // Tree foliage
-            this.drawEllipse(
+            this.canvas.drawEllipse(
                 canvasPos.x,
                 canvasPos.y,
                 this.translateLengthOnXAxisToCanvas(tree.radius),
