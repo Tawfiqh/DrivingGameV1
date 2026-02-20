@@ -1,6 +1,12 @@
 import { GameState, Position } from './CarGame.js';
 import { Vehicle } from './Vehicle.js';
 import { BaseRenderer } from './BaseRenderer.js';
+import { degreesToRadians } from './Helpers.js';
+import { CanvasVehicle } from './TopDown2dRenderer.js';
+
+export interface Position3d extends Position {
+    z: number;
+}
 
 // initialise the renderer
 export class Chase3dRenderer extends BaseRenderer {
@@ -11,9 +17,12 @@ export class Chase3dRenderer extends BaseRenderer {
 
     readonly treeColor = '#535e3b';
     readonly backgroundColor = '#7a8a26';
+    readonly tiltAngle: number = degreesToRadians(50);
+
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    canvasCenterInWorldY: number = 0  // Y will adjust to the player's y position
+    // x and y position of the camera are 0
+    cameraY: number = 0  // Y will adjust to the player's y position 
 
     constructor(gameState: GameState, canvas: HTMLCanvasElement, gameOver: HTMLDivElement) {
         super(gameState, canvas, gameOver);
@@ -46,7 +55,7 @@ export class Chase3dRenderer extends BaseRenderer {
 
     updateCanvasCenterInWorld(playerY: number): void {
         const yOffset = this.gameState.player.length; // yOffset is to adjust for the player being at the bottom centre of the screen
-        this.canvasCenterInWorldY = playerY - yOffset
+        this.cameraY = playerY - yOffset
     }
 
     drawRoad(): void { //TBC - this could be simpler if we don't constantly redraw
@@ -160,17 +169,44 @@ export class Chase3dRenderer extends BaseRenderer {
         return this.translateWorldToCanvas({ x: length, y: 0 }).x - this.translateWorldToCanvas({ x: 0, y: 0 }).x
     }
 
+
+    tiltOnZAxis(worldPosition: Position, tiltAngle: number): Position3d {
+
+        const player = this.gameState.player;
+        const pivotPoint = player.y + player.length * 2;
+
+        // If you wanted to rotate the point around something other than the origin (e.g. the camera)
+        // you need to first translate the whole system so that the point of rotation is at the origin.
+        //  Then perform the rotation. And finally, undo the translation
+        const yAfterTilt = ((worldPosition.y - pivotPoint) * Math.cos(tiltAngle)) + pivotPoint
+
+        const zAfterTilt = ((worldPosition.y - pivotPoint) * Math.sin(tiltAngle)) + pivotPoint
+
+
+        return {
+            x: worldPosition.x, // x is unchanged by the tilt of the game board around the x axis
+            y: yAfterTilt,
+            z: zAfterTilt
+        };
+    }
+
     translateWorldToCanvas(worldPosition: Position): Position {
+
+        const worldPosition3d: Position3d = this.tiltOnZAxis(worldPosition, this.tiltAngle)
+
+        // const x = (this.cameraY / worldPosition3d.y) * worldPosition3d.x
+        // const y = (this.cameraY / worldPosition3d.y) * worldPosition3d.z
+
         return {
             // X=0 should be centered on the canvas
             // World X: -10 .. 10 => 0 .. 20 => 0..10 //assumption is that the world x is only between -10 and 10
             // Canvas X: 0..MapWidth
-            x: (worldPosition.x + 10) / 20 * this.initialMapSize,
+            x: (worldPosition3d.x + 10) / 20 * this.initialMapSize,
 
             // World Y: 0..10 (displayed on screen)
             // Canvas Y: 0..MapHeight
             // Y should be at the bottom of the canvas
-            y: (this.initialMapSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.initialMapSize)),
+            y: (this.initialMapSize - (((worldPosition3d.y - this.cameraY) / 10) * this.initialMapSize)),
         };
     }
 

@@ -1,5 +1,6 @@
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 // Array helpers
-
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 // compare_fn is a function that compares two elements and returns a number
 // -1 if a < b
@@ -56,7 +57,9 @@ export function pushSorted<T>(array: Array<T>, element: T, compare_fn: (a: T, b:
 }
 
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 // Numerical helpers
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 export function varyNumberByPercentage(originalNumber: number, maxPercentageVariance: number): number {
     // e.g: given then originalNumber 10 and a max percentage variance of 0.2 -> retur random number between 8 and 12
 
@@ -70,10 +73,14 @@ export function varyNumberByPercentage(originalNumber: number, maxPercentageVari
     return originalNumber * (1 + randomPercentageVariance); // e.g 10 * (1 - 0.12) = 10 * 0.88 = 8.8
 }
 
+export function degreesToRadians(degrees: number): number {
+    return degrees * Math.PI / 180;
+}
 
 
-
-// Colors
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+// Color helpers
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 export function randomShadeOfBlue(): string {
 
     const red = varyNumberByPercentage(35, 0.5);
