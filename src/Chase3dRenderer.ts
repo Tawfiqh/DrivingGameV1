@@ -17,12 +17,10 @@ export class Chase3dRenderer extends BaseRenderer {
 
     readonly treeColor = '#535e3b';
     readonly backgroundColor = '#7a8a26';
-    readonly tiltAngle: number = degreesToRadians(50);
-
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     // x and y position of the camera are 0
-    cameraY: number = 0  // Y will adjust to the player's y position 
+    screenY: number = 0  // Y will adjust to the player's y position 
 
     constructor(gameState: GameState, canvas: HTMLCanvasElement, gameOver: HTMLDivElement) {
         super(gameState, canvas, gameOver);
@@ -54,8 +52,8 @@ export class Chase3dRenderer extends BaseRenderer {
 
 
     updateCanvasCenterInWorld(playerY: number): void {
-        const yOffset = this.gameState.player.length; // yOffset is to adjust for the player being at the bottom centre of the screen
-        this.cameraY = playerY - yOffset
+        const yOffset = this.gameState.player.length * 2; // yOffset is to adjust for the player being at the bottom centre of the screen
+        this.screenY = playerY - yOffset
     }
 
     drawRoad(): void { //TBC - this could be simpler if we don't constantly redraw
@@ -170,43 +168,64 @@ export class Chase3dRenderer extends BaseRenderer {
     }
 
 
-    tiltOnZAxis(worldPosition: Position, tiltAngle: number): Position3d {
+    tiltOnZAxis(position: Position, pivotPointY: number, tiltAngle: number): Position3d {
 
-        const player = this.gameState.player;
-        const pivotPoint = player.y + player.length * 2;
 
         // If you wanted to rotate the point around something other than the origin (e.g. the camera)
         // you need to first translate the whole system so that the point of rotation is at the origin.
         //  Then perform the rotation. And finally, undo the translation
-        const yAfterTilt = ((worldPosition.y - pivotPoint) * Math.cos(tiltAngle)) + pivotPoint
-
-        const zAfterTilt = ((worldPosition.y - pivotPoint) * Math.sin(tiltAngle)) + pivotPoint
-
+        const yAfterTilt = ((position.y - pivotPointY) * Math.cos(tiltAngle)) + pivotPointY // y cos(angle) -- and translated around the pivot point
+        const zAfterTilt = ((position.y - pivotPointY) * Math.sin(tiltAngle)) + pivotPointY // y sin(angle) -- and translated around the pivot point
 
         return {
-            x: worldPosition.x, // x is unchanged by the tilt of the game board around the x axis
+            x: position.x, // x is unchanged by the tilt of the game board around the x axis
             y: yAfterTilt,
             z: zAfterTilt
         };
     }
 
+    readonly tiltAngle: number = degreesToRadians(50);
+
+    convertWorldToCameraSpace(worldPosition: Position): Position {
+        return {
+            x: worldPosition.x,
+            y: worldPosition.y - this.screenY
+        }
+    }
+
     translateWorldToCanvas(worldPosition: Position): Position {
 
-        const worldPosition3d: Position3d = this.tiltOnZAxis(worldPosition, this.tiltAngle)
+        // 1.
+        // Pull everything toward the camera on the y axis
+        // const screenOffset = 50;
+        // const screenPositionY = this.cameraY + screenOffset
 
-        // const x = (this.cameraY / worldPosition3d.y) * worldPosition3d.x
-        // const y = (this.cameraY / worldPosition3d.y) * worldPosition3d.z
+        const cameraSpaceP: Position = this.convertWorldToCameraSpace(worldPosition)
 
+
+        // 2. Tilt the camera relative position on the z-axis
+        // Tilt on z-axis to give a 3D effect
+        const pivotPoint = this.convertWorldToCameraSpace(
+            { x: 0, y: this.gameState.player.y }
+        ).y;
+
+        const cameraSpaceTilted: Position3d = this.tiltOnZAxis(cameraSpaceP, pivotPoint, this.tiltAngle)
+
+        //3 . Convert the camera space position to the virtual screen space
+        const x = /*(this.screenY / cameraSpaceTilted.y) * */ cameraSpaceTilted.x
+        const y = /*(this.screenY / cameraSpaceTilted.y) * */ cameraSpaceTilted.z
+
+        // 4. convert the virtual screen space to the HTMLcanvas space
         return {
             // X=0 should be centered on the canvas
-            // World X: -10 .. 10 => 0 .. 20 => 0..10 //assumption is that the world x is only between -10 and 10
+            // World X: -10 .. 10 => 0 .. 20 => 0..1 //assumption is that the world x is only between -10 and 10
             // Canvas X: 0..MapWidth
-            x: (worldPosition3d.x + 10) / 20 * this.initialMapSize,
+            x: (x + 10) / 20 * this.initialMapSize,
 
             // World Y: 0..10 (displayed on screen)
             // Canvas Y: 0..MapHeight
             // Y should be at the bottom of the canvas
-            y: (this.initialMapSize - (((worldPosition3d.y - this.cameraY) / 10) * this.initialMapSize)),
+            y: this.initialMapSize - ((y / 10) * this.initialMapSize),
         };
     }
 
