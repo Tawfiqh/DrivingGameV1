@@ -111,7 +111,8 @@ function parseRgbColor(color: string): { r: number, g: number, b: number } {
 }
 
 
-export function lightenColor(color: string): string {
+// Percentage is a number between 0 and 1 -- i.e 0.4 is 40%
+export function lightenColor(color: string, percentage: number = 0.4): string {
     // given a color string, return a lighter version of the color
     // e.g. #000000 -> #111111
     // e.g. #ffffff -> #eeeeee
@@ -126,10 +127,10 @@ export function lightenColor(color: string): string {
         return color;
     }
 
-    // lighten the color by 20%
-    colorObject.r = colorObject.r * 1.4;
-    colorObject.g = colorObject.g * 1.4;
-    colorObject.b = colorObject.b * 1.4;
+    // lighten the color by 40%
+    colorObject.r = colorObject.r * (1 + percentage);
+    colorObject.g = colorObject.g * (1 + percentage);
+    colorObject.b = colorObject.b * (1 + percentage);
 
 
     const lightenedColor = `rgb(${colorObject.r}, ${colorObject.g}, ${colorObject.b})`;

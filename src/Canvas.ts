@@ -39,6 +39,19 @@ export class Canvas {
     }
 
     drawQuadrilateral(a: Position, b: Position, c: Position, d: Position, color: string): void {
+
+        const lowerBound = - this.canvas.width * 1.5;
+        if (a.x < lowerBound || a.y < lowerBound || b.x < lowerBound || b.y < lowerBound || c.x < lowerBound || c.y < lowerBound || d.x < lowerBound || d.y < lowerBound) {
+            // console.error('Quadrilateral coordinates are out of bounds');
+            return;
+        }
+
+        const upperBound = this.canvas.width * 1.5;
+        if (a.x > upperBound || a.y > upperBound || b.x > upperBound || b.y > upperBound || c.x > upperBound || c.y > upperBound || d.x > upperBound || d.y > upperBound) {
+            // console.error('Quadrilateral coordinates are out of bounds');
+            return;
+        }
+
         const ctx = this.ctx;
         ctx.beginPath();
         ctx.fillStyle = color;

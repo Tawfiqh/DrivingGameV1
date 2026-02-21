@@ -174,8 +174,13 @@
     // Game initialisation
     const carGame = new CarGame();
 
+    const startWith3d = true;
     // Start with 3D view
     let currentRenderer = { stop: () => { }, start: () => { } };
-    toggleView(Chase3dRenderer, view3d);
+    if (startWith3d) {
+        toggleView(Chase3dRenderer, view3d);
+    } else {
+        toggleView(TopDown2dRenderer, view2d);
+    }
 
 </script>

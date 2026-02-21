@@ -1,7 +1,7 @@
 import { GameState, Position } from './CarGame.js';
 import { Vehicle } from './Vehicle.js';
 import { BaseRenderer } from './BaseRenderer.js';
-import { degreesToRadians } from './Helpers.js';
+import { degreesToRadians, lightenColor } from './Helpers.js';
 import { CanvasVehicle } from './TopDown2dRenderer.js';
 
 export interface Position3d extends Position {
@@ -14,9 +14,14 @@ export class Chase3dRenderer extends BaseRenderer {
     // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     readonly roadColor = 'gray';
     readonly roadMarkingsColor = '#ededed';
+    readonly roadMarkingsLightColor = '#8d8d8d'
+
 
     readonly treeColor = '#535e3b';
     readonly backgroundColor = '#7a8a26';
+
+
+    readonly tiltAngle: number = degreesToRadians(75);
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     // x and y position of the camera are 0
@@ -44,10 +49,10 @@ export class Chase3dRenderer extends BaseRenderer {
         this.renderVehicles();
 
         // Draw trees off the road
-        // this.renderTrees();
+        this.renderTrees();
 
         // Draw the car at it's position as a box
-        this.drawCar(this.translatedVehicle(this.gameState.player));
+        this.drawCar(this.gameState.player);
         this.renderScore(this.gameState.score);
 
     }
@@ -74,15 +79,12 @@ export class Chase3dRenderer extends BaseRenderer {
 
     }
 
-
     drawRoadSegment(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
         this.drawRoadSegmentRoad(segmentStart, segmentEnd);
         this.drawRoadSegmentMarkings(segmentStart, segmentEnd);
     }
 
     drawRoadSegmentRoad(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
-
-
 
         // Draw the road segment as a polygon
         //   c          d
@@ -95,11 +97,11 @@ export class Chase3dRenderer extends BaseRenderer {
         this.canvas.drawQuadrilateral(segmentStart[0], segmentStart[1], segmentEnd[1], segmentEnd[0], this.roadColor);
     }
 
-
+    // TBC - if this works -- as the line stripes may get weird with perspective - iDK
     drawRoadSegmentMarkings(segmentStart: [Position, Position], segmentEnd: [Position, Position]): void {
 
         // draw Road Segment Lanes
-        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 1 / 3, this.roadMarkingsColor, 0.75, true)
+        this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 1 / 3, this.roadMarkingsLightColor, 0.4)
 
         // draw road boundary on the far side of the road
         this.drawRoadSegmentBoundaries(segmentStart, segmentEnd, 0.99, this.roadMarkingsColor, 0.25)
@@ -155,8 +157,6 @@ export class Chase3dRenderer extends BaseRenderer {
     }
 
 
-
-
     translateWorldSegmentToCanvas(worldSegment: [Position, Position]): [Position, Position] {
         return [
             this.translateWorldToCanvas(worldSegment[0]),
@@ -164,33 +164,8 @@ export class Chase3dRenderer extends BaseRenderer {
         ];
     }
 
-    translateLengthOnYAxisToCanvas(length: number): number {
-        const originY = this.translateWorldToCanvas(
-            { x: 0, y: this.gameState.player.y }
-        ).y
-
-        const y2 = this.translateWorldToCanvas(
-            { x: 0, y: this.gameState.player.y + length }
-        ).y
-
-        return originY - y2
-    }
-
-    translateLengthOnXAxisToCanvas(length: number): number {
-
-        const x1 = this.translateWorldToCanvas(
-            { x: length, y: this.gameState.player.y }
-        ).x
-
-        const originX = this.translateWorldToCanvas(
-            { x: 0, y: this.gameState.player.y }
-        ).x
-        return x1 - originX
-    }
-
 
     tiltBoardUpwards(position: Position3d, pivotPoint: number, tiltAngle: number): Position3d {
-
 
         // If you wanted to rotate the point around something other than the origin (e.g. the camera)
         // you need to first translate the whole system so that the point of rotation is at the origin.
@@ -205,14 +180,13 @@ export class Chase3dRenderer extends BaseRenderer {
         };
     }
 
-    readonly tiltAngle: number = degreesToRadians(80);
 
     // Pulls everything towards the camera on the y axis
     // && Sets z as the depth of the world position from the camera 
     // (as is normal in 3D graphics and perspective projection)
     convertWorldToViewSpace(worldPosition: Position): Position3d {
         return {
-            x: worldPosition.x,
+            x: - worldPosition.x,
             y: 0,
             z: -(worldPosition.y - this.cameraY)
         }
@@ -265,72 +239,71 @@ export class Chase3dRenderer extends BaseRenderer {
 
     // Translate the player to the canvas coordinates
     // This is because the player is in world coordinates, but the canvas is in canvas coordinates
-    translatedVehicle(vehicle: Vehicle): CanvasVehicle {
+    // translatedVehicle(vehicle: Vehicle): CanvasVehicle {
 
-        let translatedCenter = this.translateWorldToCanvas(vehicle, vehicle.name)
+    //     let translatedCenter = this.translateWorldToCanvas(vehicle, vehicle.name)
 
-        return {
-            x: translatedCenter.x,
-            y: translatedCenter.y,
-            steeringAngle: vehicle.steeringAngle,
-            width: this.translateLengthOnXAxisToCanvas(vehicle.width),
-            length: this.translateLengthOnYAxisToCanvas(vehicle.length),
-            color: vehicle.color,
-            lighterColor: vehicle.lighterColor
-        };
+    //     return {
+    //         x: translatedCenter.x,
+    //         y: translatedCenter.y,
+    //         steeringAngle: vehicle.steeringAngle,
+    //         width: this.translateLengthOnXAxisToCanvas(vehicle.width),
+    //         length: this.translateLengthOnYAxisToCanvas(vehicle.length),
+    //         color: vehicle.color,
+    //         lighterColor: vehicle.lighterColor
+    //     };
 
-    }
+    // }
 
-    drawCar(canvasPlayer: CanvasVehicle): void {
+    drawCar(canvasPlayer: Vehicle): void {
+
+        const bottomLeft = this.translateWorldToCanvas({ x: canvasPlayer.x - canvasPlayer.width / 2, y: canvasPlayer.y - canvasPlayer.length / 2 })
+        const bottomRight = this.translateWorldToCanvas({ x: canvasPlayer.x + canvasPlayer.width / 2, y: canvasPlayer.y - canvasPlayer.length / 2 })
+        const topRight = this.translateWorldToCanvas({ x: canvasPlayer.x + canvasPlayer.width / 2, y: canvasPlayer.y + canvasPlayer.length / 2 })
+        const topLeft = this.translateWorldToCanvas({ x: canvasPlayer.x - canvasPlayer.width / 2, y: canvasPlayer.y + canvasPlayer.length / 2 })
+
         //Draw main body box
-        this.canvas.drawRect(
-            canvasPlayer.x,
-            canvasPlayer.y,
-            canvasPlayer.steeringAngle,
-            canvasPlayer.width,
-            canvasPlayer.length,
-            canvasPlayer.color
-        );
+        this.canvas.drawQuadrilateral(bottomLeft, bottomRight, topRight, topLeft, canvasPlayer.color);
 
-        // Draw the roof of the car
-        const roofScale = 0.67;
-        this.canvas.drawRect(
-            canvasPlayer.x,
-            canvasPlayer.y,
-            canvasPlayer.steeringAngle,
-            canvasPlayer.width * roofScale,
-            canvasPlayer.length * roofScale,
-            canvasPlayer.lighterColor
-        );
+        // // Draw the roof of the car
+        // const roofScale = 0.67;
+        // this.canvas.drawRect(
+        //     canvasPlayer.x,
+        //     canvasPlayer.y,
+        //     canvasPlayer.steeringAngle,
+        //     canvasPlayer.width * roofScale,
+        //     canvasPlayer.length * roofScale,
+        //     canvasPlayer.lighterColor
+        // );
 
 
 
         // Draw headlights positioned at the front of the car, rotated with the car
-        const cos = Math.cos(canvasPlayer.steeringAngle * Math.PI / 180);
-        const sin = Math.sin(canvasPlayer.steeringAngle * Math.PI / 180);
+        // const cos = Math.cos(canvasPlayer.steeringAngle * Math.PI / 180);
+        // const sin = Math.sin(canvasPlayer.steeringAngle * Math.PI / 180);
 
-        // One headlight at -1, and one at +1 - so we get a left and right headlight
-        for (let i = -1; i <= 1; i += 2) {
+        // // One headlight at -1, and one at +1 - so we get a left and right headlight
+        // for (let i = -1; i <= 1; i += 2) {
 
-            // Headlight positions in car's local coordinate system (before rotation)
-            // Front of car is at -length/2 in local Y, headlights are at ±width/4 in local X
-            const headlightLocalX = i * canvasPlayer.width / 4;
-            const headlightLocalY = - canvasPlayer.length / 2;
+        //     // Headlight positions in car's local coordinate system (before rotation)
+        //     // Front of car is at -length/2 in local Y, headlights are at ±width/4 in local X
+        //     const headlightLocalX = i * canvasPlayer.width / 4;
+        //     const headlightLocalY = - canvasPlayer.length / 2;
 
-            // Rotate and translate headlight positions to canvas coordinates
-            const headlightX = canvasPlayer.x + (headlightLocalX * cos) - (headlightLocalY * sin);
-            const headlightY = canvasPlayer.y + (headlightLocalX * sin) + (headlightLocalY * cos);
+        //     // Rotate and translate headlight positions to canvas coordinates
+        //     const headlightX = canvasPlayer.x + (headlightLocalX * cos) - (headlightLocalY * sin);
+        //     const headlightY = canvasPlayer.y + (headlightLocalX * sin) + (headlightLocalY * cos);
 
-            // Draw headlights rotated to face the car's direction
-            this.canvas.drawRect(
-                headlightX,
-                headlightY,
-                canvasPlayer.steeringAngle,
-                canvasPlayer.width / 5,
-                canvasPlayer.length / 10,
-                'yellow'
-            );
-        }
+        //     // Draw headlights rotated to face the car's direction
+        //     this.canvas.drawRect(
+        //         headlightX,
+        //         headlightY,
+        //         canvasPlayer.steeringAngle,
+        //         canvasPlayer.width / 5,
+        //         canvasPlayer.length / 10,
+        //         'yellow'
+        //     );
+        // }
 
 
     }
@@ -342,21 +315,19 @@ export class Chase3dRenderer extends BaseRenderer {
         for (const tree of this.gameState.trees) {
             const canvasPos = this.translateWorldToCanvas({ x: tree.x, y: tree.y }, 'tree');
 
+            const bottomLeft = this.translateWorldToCanvas({ x: tree.x - tree.radius, y: tree.y - tree.radius })
+            const topRight = this.translateWorldToCanvas({ x: tree.x + tree.radius, y: tree.y + tree.radius })
+            const topLeft = this.translateWorldToCanvas({ x: tree.x - tree.radius, y: tree.y + tree.radius })
+            const bottomRight = this.translateWorldToCanvas({ x: tree.x + tree.radius, y: tree.y - tree.radius })
             // Tree foliage
-            this.canvas.drawEllipse(
-                canvasPos.x,
-                canvasPos.y,
-                this.translateLengthOnXAxisToCanvas(tree.radius),
-                this.translateLengthOnYAxisToCanvas(tree.radius),
-                this.treeColor // Forest green color
-            );
+            this.canvas.drawQuadrilateral(bottomLeft, bottomRight, topRight, topLeft, this.treeColor);
         }
     }
 
     renderVehicles(): void {
         // Render all vehicles in the game state
         for (const vehicle of this.gameState.vehicles) {
-            this.drawCar(this.translatedVehicle(vehicle));
+            this.drawCar(vehicle);
         }
     }
 
