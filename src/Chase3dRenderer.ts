@@ -44,7 +44,7 @@ export class Chase3dRenderer extends BaseRenderer {
         this.renderVehicles();
 
         // Draw trees off the road
-        this.renderTrees();
+        // this.renderTrees();
 
         // Draw the car at it's position as a box
         this.drawCar(this.translatedVehicle(this.gameState.player));
@@ -165,11 +165,27 @@ export class Chase3dRenderer extends BaseRenderer {
     }
 
     translateLengthOnYAxisToCanvas(length: number): number {
-        return this.translateWorldToCanvas({ x: 0, y: 0 }).y - this.translateWorldToCanvas({ x: 0, y: length }).y
+        const originY = this.translateWorldToCanvas(
+            { x: 0, y: this.gameState.player.y }
+        ).y
+
+        const y2 = this.translateWorldToCanvas(
+            { x: 0, y: this.gameState.player.y + length }
+        ).y
+
+        return originY - y2
     }
 
     translateLengthOnXAxisToCanvas(length: number): number {
-        return this.translateWorldToCanvas({ x: length, y: 0 }).x - this.translateWorldToCanvas({ x: 0, y: 0 }).x
+
+        const x1 = this.translateWorldToCanvas(
+            { x: length, y: this.gameState.player.y }
+        ).x
+
+        const originX = this.translateWorldToCanvas(
+            { x: 0, y: this.gameState.player.y }
+        ).x
+        return x1 - originX
     }
 
 
@@ -202,13 +218,17 @@ export class Chase3dRenderer extends BaseRenderer {
         }
     }
 
-    translateWorldToCanvas(worldPosition: Position): Position {
-
+    translateWorldToCanvas(worldPosition: Position, projectionObjectName: string | null = null): Position {
+        if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
+            console.log(`\n\n 🅰️💡 - Projection object name: ${projectionObjectName} -- World position: ${worldPosition.x}, ${worldPosition.y} -- current camera y: ${this.cameraY}`);
+        }
         // 1. World spcae -> View space
         // Pull everything toward the camera on the y axis
         const viewSpaceBeforeTilit: Position3d = this.convertWorldToViewSpace(worldPosition)
 
-
+        if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
+            console.log(`🅱️💡 - View space before tilt: ${viewSpaceBeforeTilit.x}, ${viewSpaceBeforeTilit.y} ${viewSpaceBeforeTilit.z}`);
+        }
         // 2. Tilt the "board" around the pivot point on the view-space z-axis
         // This gives it some height on the view-space y-axis (otherwise view-space y would be 0 for everything)
         const pivotPoint = this.convertWorldToViewSpace(
@@ -217,13 +237,19 @@ export class Chase3dRenderer extends BaseRenderer {
 
         const viewSpace: Position3d = this.tiltBoardUpwards(viewSpaceBeforeTilit, pivotPoint, this.tiltAngle) // Rotates around the x-axis ona point on the y-axis
 
-        //3 . Convert the camera space -> to the virtual screen space
+        if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
+            console.log(`🅱️💡 - View space after tilt: ${viewSpace.x}, ${viewSpace.y} ${viewSpace.z}`);
+        }
+        //3 . Convert the camera space -> to the virtual image plane
         const screenDistanceInViewSpace = this.convertWorldToViewSpace({ x: 0, y: this.screenY }).z
         const psy = (screenDistanceInViewSpace / -viewSpace.z) * viewSpace.y
         const psx = (screenDistanceInViewSpace / -viewSpace.z) * viewSpace.x
 
 
-        // 4. Convert the virtual screen space to the HTMLcanvas space (normalised to htmlCanvasSize)
+        if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
+            console.log(`🅲️💡 - Virtual Image Plane: ${psx}, ${psy}  -- n: ${screenDistanceInViewSpace}`);
+        }
+        // 4. Convert the virtual image plane to the HTMLcanvas space (normalised to htmlCanvasSize)
         return {
             // X=0 should be centered on the canvas
             // World X: -10 .. 10 => 0 .. 20 => 0..1 //assumption is that the world x is only between -10 and 10
@@ -241,7 +267,7 @@ export class Chase3dRenderer extends BaseRenderer {
     // This is because the player is in world coordinates, but the canvas is in canvas coordinates
     translatedVehicle(vehicle: Vehicle): CanvasVehicle {
 
-        let translatedCenter = this.translateWorldToCanvas(vehicle)
+        let translatedCenter = this.translateWorldToCanvas(vehicle, vehicle.name)
 
         return {
             x: translatedCenter.x,
@@ -314,7 +340,7 @@ export class Chase3dRenderer extends BaseRenderer {
         // Render all trees in the game state
         // let i = 0
         for (const tree of this.gameState.trees) {
-            const canvasPos = this.translateWorldToCanvas({ x: tree.x, y: tree.y });
+            const canvasPos = this.translateWorldToCanvas({ x: tree.x, y: tree.y }, 'tree');
 
             // Tree foliage
             this.canvas.drawEllipse(
