@@ -21,9 +21,11 @@ export class Player extends Vehicle {
     // 67.1mph = 30m/s 
     maxSteeringAngle: number = 135;
     steeringAngleIncrement: number = 10; // degrees
+    readonly baseLength: number = 3.83;
+    readonly baseWidth: number = 1.764;
     // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    constructor(initialX: number = 0, initialY: number = 10, width: number = 1.5, length: number = 1.75, color: string = Player.defaultColor) {
+    constructor(initialX: number = 0, initialY: number = 10, width: number = 1.5, length: number = 5, color: string = Player.defaultColor) {
         const initialSteeringAngle = 0
         const initialVelocity = 0
         const objectName = "playerName"

@@ -18,10 +18,11 @@ export class Chase3dRenderer extends BaseRenderer {
 
 
     readonly treeColor = '#535e3b';
+    readonly treeTopColor = '#6b7a4e';
     readonly backgroundColor = '#7a8a26';
 
 
-    readonly tiltAngle: number = degreesToRadians(75);
+    readonly tiltAngle: number = degreesToRadians(55);
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     // x and y position of the camera are 0
@@ -245,7 +246,8 @@ export class Chase3dRenderer extends BaseRenderer {
 
 
         // 4. Convert the virtual image plane to the HTMLcanvas space (normalised to htmlCanvasSize)
-        const xMax = 3
+        const xMax = 2
+        const yScale = 12 // lower is more zoomed in
         return {
             // X=0 should be centered on the canvas
             // World X: -10 .. 10 => 0 .. 20 => 0..1 //assumption is that the world x is only between -10 and 10
@@ -255,34 +257,80 @@ export class Chase3dRenderer extends BaseRenderer {
             // World Y: 0..10 (displayed on screen)
             // Canvas Y: 0..MapHeight
             // Y should be at the bottom of the canvas
-            y: this.htmlCanvasSize - ((psy / 10) * this.htmlCanvasSize),
+            y: this.htmlCanvasSize - ((psy / yScale) * this.htmlCanvasSize),
         };
     }
 
 
     drawCar(car: Vehicle): void {
 
+        if car.y <= this.cameraY {
+            return
+        }
         const halfWidth = car.width / 2;
         const halfLength = car.length / 2;
+
+        const roofScale = 0.6;
+        const roofScaleWidth = halfWidth * roofScale;
+        const roofScaleLength = halfLength * roofScale * 0.5;
+        const roofHeight = roofScaleWidth;
+
         const bottomLeft = this.translateWorldToCanvas({ x: car.x - halfWidth, y: car.y - halfLength })
         const bottomRight = this.translateWorldToCanvas({ x: car.x + halfWidth, y: car.y - halfLength })
         const topRight = this.translateWorldToCanvas({ x: car.x + halfWidth, y: car.y + halfLength })
         const topLeft = this.translateWorldToCanvas({ x: car.x - halfWidth, y: car.y + halfLength })
 
-        //Draw main body box
+
+
+        const bottomLeftHigher = this.translateWorldToCanvas3d({ x: car.x - halfWidth, y: car.y - halfLength, z: roofHeight })
+        const bottomRightHigher = this.translateWorldToCanvas3d({ x: car.x + halfWidth, y: car.y - halfLength, z: roofHeight })
+        const topRightHigher = this.translateWorldToCanvas3d({ x: car.x + halfWidth, y: car.y + halfLength, z: roofHeight })
+        const topLeftHigher = this.translateWorldToCanvas3d({ x: car.x - halfWidth, y: car.y + halfLength, z: roofHeight })
+
+
+        //Draw main body box - bottom layer
         this.canvas.drawQuadrilateral(bottomLeft, bottomRight, topRight, topLeft, car.color);
 
-        // // Draw the roof of the car
-        const roofScale = 0.6;
-        const roofScaleWidth = halfWidth * roofScale;
-        const roofScaleLength = halfLength * roofScale;
-        const roofHeight = roofScaleWidth;
-        const roofBottomLeft = this.translateWorldToCanvas3d({ x: car.x - roofScaleWidth, y: car.y - roofScaleLength, z: roofHeight })
-        const roofBottomRight = this.translateWorldToCanvas3d({ x: car.x + roofScaleWidth, y: car.y - roofScaleLength, z: roofHeight })
-        const roofTopRight = this.translateWorldToCanvas3d({ x: car.x + roofScaleWidth, y: car.y + roofScaleLength, z: roofHeight })
-        const roofTopLeft = this.translateWorldToCanvas3d({ x: car.x - roofScaleWidth, y: car.y + roofScaleLength, z: roofHeight })
 
-        //Draw main body box
+        //Draw main body box - upper layer
+        // lines to connect the bottom layer to the upper layer
+        this.canvas.drawLine(bottomLeft, bottomLeftHigher, car.lighterColor, 0.5);
+        this.canvas.drawLine(bottomRight, bottomRightHigher, car.lighterColor, 0.5);
+        this.canvas.drawLine(topRight, topRightHigher, car.lighterColor, 0.5);
+        this.canvas.drawLine(topLeft, topLeftHigher, car.lighterColor, 0.5);
+
+        // lines to connect the upper layer to each other -- like a wireframe
+        this.canvas.drawQuadrilateral(bottomLeftHigher, bottomRightHigher, topRightHigher, topLeftHigher, car.color);
+
+        this.canvas.drawLine(bottomLeftHigher, bottomRightHigher, car.lighterColor, 0.5);
+        this.canvas.drawLine(bottomRightHigher, topRightHigher, car.lighterColor, 0.5);
+        this.canvas.drawLine(topRightHigher, topLeftHigher, car.lighterColor, 0.5);
+        this.canvas.drawLine(topLeftHigher, bottomLeftHigher, car.lighterColor, 0.5);
+
+
+
+        // // Draw the roof of the car
+        const roofBottomLeft = this.translateWorldToCanvas3d({ x: car.x - roofScaleWidth, y: car.y - roofScaleLength, z: -roofHeight })
+        const roofBottomRight = this.translateWorldToCanvas3d({ x: car.x + roofScaleWidth, y: car.y - roofScaleLength, z: -roofHeight })
+        const roofTopRight = this.translateWorldToCanvas3d({ x: car.x + roofScaleWidth, y: car.y + roofScaleLength, z: -roofHeight })
+        const roofTopLeft = this.translateWorldToCanvas3d({ x: car.x - roofScaleWidth, y: car.y + roofScaleLength, z: -roofHeight })
+
+
+        const quarterWidth = halfWidth / 1.1;
+        const quarterLength = halfLength / 2;
+        const bottomLeftHigherMid = this.translateWorldToCanvas3d({ x: car.x - quarterWidth, y: car.y - quarterLength, z: roofHeight / 2 })
+        const bottomRightHigherMid = this.translateWorldToCanvas3d({ x: car.x + quarterWidth, y: car.y - quarterLength, z: roofHeight / 2 })
+        const topRightHigherMid = this.translateWorldToCanvas3d({ x: car.x + quarterWidth, y: car.y + quarterLength, z: roofHeight / 2 })
+        const topLeftHigherMid = this.translateWorldToCanvas3d({ x: car.x - quarterWidth, y: car.y + quarterLength, z: roofHeight / 2 })
+
+
+
+        this.canvas.drawLine(bottomLeftHigherMid, roofBottomLeft, car.lighterColor, 0.5);
+        this.canvas.drawLine(bottomRightHigherMid, roofBottomRight, car.lighterColor, 0.5);
+        this.canvas.drawLine(topRightHigherMid, roofTopRight, car.lighterColor, 0.5);
+        this.canvas.drawLine(topLeftHigherMid, roofTopLeft, car.lighterColor, 0.5);
+
+        //Draw roof box
         this.canvas.drawQuadrilateral(roofBottomLeft, roofBottomRight, roofTopRight, roofTopLeft, car.lighterColor);
 
 
@@ -331,17 +379,34 @@ export class Chase3dRenderer extends BaseRenderer {
 
 
     renderTrees(): void {
-        // Render all trees in the game state
-        // let i = 0
         for (const tree of this.gameState.trees) {
-            const canvasPos = this.translateWorldToCanvas({ x: tree.x, y: tree.y }, 'tree');
+            const treeHeight = tree.radius * 3;
 
-            const bottomLeft = this.translateWorldToCanvas({ x: tree.x - tree.radius, y: tree.y - tree.radius })
-            const topRight = this.translateWorldToCanvas({ x: tree.x + tree.radius, y: tree.y + tree.radius })
-            const topLeft = this.translateWorldToCanvas({ x: tree.x - tree.radius, y: tree.y + tree.radius })
-            const bottomRight = this.translateWorldToCanvas({ x: tree.x + tree.radius, y: tree.y - tree.radius })
-            // Tree foliage
-            this.canvas.drawQuadrilateral(bottomLeft, bottomRight, topRight, topLeft, this.treeColor);
+            // Bottom face (z=0)
+            const bBL = this.translateWorldToCanvas3d({ x: tree.x - tree.radius, y: tree.y - tree.radius, z: 0 })
+            const bBR = this.translateWorldToCanvas3d({ x: tree.x + tree.radius, y: tree.y - tree.radius, z: 0 })
+            const bTR = this.translateWorldToCanvas3d({ x: tree.x + tree.radius, y: tree.y + tree.radius, z: 0 })
+            const bTL = this.translateWorldToCanvas3d({ x: tree.x - tree.radius, y: tree.y + tree.radius, z: 0 })
+
+            // Top face (z=treeHeight)
+            const tBL = this.translateWorldToCanvas3d({ x: tree.x - tree.radius, y: tree.y - tree.radius, z: -treeHeight })
+            const tBR = this.translateWorldToCanvas3d({ x: tree.x + tree.radius, y: tree.y - tree.radius, z: -treeHeight })
+            const tTR = this.translateWorldToCanvas3d({ x: tree.x + tree.radius, y: tree.y + tree.radius, z: -treeHeight })
+            const tTL = this.translateWorldToCanvas3d({ x: tree.x - tree.radius, y: tree.y + tree.radius, z: -treeHeight })
+
+            if (tree.y <= this.cameraY) {
+                continue
+            }
+
+            // bottom face
+            this.canvas.drawQuadrilateral(bBL, bBR, bTR, bTL, this.treeColor);
+
+            this.canvas.drawLine(bBL, tBL, this.treeColor, 0.5);
+            this.canvas.drawLine(bBR, tBR, this.treeColor, 0.5);
+            this.canvas.drawLine(bTR, tTR, this.treeColor, 0.5);
+            this.canvas.drawLine(bTL, tTL, this.treeColor, 0.5);
+
+            this.canvas.drawQuadrilateral(tBL, tBR, tTR, tTL, this.treeTopColor);
         }
     }
 

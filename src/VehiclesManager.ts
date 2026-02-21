@@ -7,7 +7,7 @@ export class VehiclesManager extends EnvironmentObjectManager {
     // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     readonly minYForVehicles: number = 50;
     //trees
-    readonly baseCarSize: number = 1.5
+    readonly baseCarWidth: number = 1.5
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     updateExistingVehicles(secondsSinceLastUpdate: number): void {
@@ -75,13 +75,13 @@ export class VehiclesManager extends EnvironmentObjectManager {
                     const randomOffsetWithinRoadWidth = Math.random() * roadHalfWidth;
                     const x = roadSide * randomOffsetWithinRoadWidth
 
-                    const width = varyNumberByPercentage(this.baseCarSize, 0.2); // add some variance to the base car size
-                    let length = width * 1.2;
+                    const width = varyNumberByPercentage(this.baseCarWidth, 0.2); // add some variance to the base car size
+                    let length = width * 2.8;
                     const newVehicle = new Vehicle(
                         x,
                         y,
                         width,
-                        varyNumberByPercentage(length, 0.2),
+                        length,
                         randomShadeOfBlue(),
                         0,
                         this.vehicleVelocityBasedOnY(y)
