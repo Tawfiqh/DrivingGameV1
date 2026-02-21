@@ -21,6 +21,9 @@ export class Chase3dRenderer extends BaseRenderer {
 
     // x and y position of the camera are 0
     screenY: number = 0  // Y will adjust to the player's y position 
+    cameraY: number = 0  // Y will adjust to the player's y position 
+
+
 
     constructor(gameState: GameState, canvas: HTMLCanvasElement, gameOver: HTMLDivElement) {
         super(gameState, canvas, gameOver);
@@ -53,6 +56,8 @@ export class Chase3dRenderer extends BaseRenderer {
 
     updateCanvasCenterInWorld(playerY: number): void {
         const yOffset = this.gameState.player.length * 2; // yOffset is to adjust for the player being at the bottom centre of the screen
+
+        this.cameraY = playerY - (2 * yOffset)
         this.screenY = playerY - yOffset
     }
 
@@ -186,7 +191,7 @@ export class Chase3dRenderer extends BaseRenderer {
 
     readonly tiltAngle: number = degreesToRadians(50);
 
-    convertWorldToCameraSpace(worldPosition: Position): Position {
+    convertWorldToViewSpace(worldPosition: Position): Position {
         return {
             x: worldPosition.x,
             y: worldPosition.y - this.screenY
@@ -195,27 +200,27 @@ export class Chase3dRenderer extends BaseRenderer {
 
     translateWorldToCanvas(worldPosition: Position): Position {
 
-        // 1.
+        // 1. World spcae -> View space
         // Pull everything toward the camera on the y axis
         // const screenOffset = 50;
         // const screenPositionY = this.cameraY + screenOffset
 
-        const cameraSpaceP: Position = this.convertWorldToCameraSpace(worldPosition)
+        const viewSpaceP: Position = this.convertWorldToViewSpace(worldPosition)
 
 
-        // 2. Tilt the camera relative position on the z-axis
+        // 2. Tilt the "board" around the pivot point on the y-axis
         // Tilt on z-axis to give a 3D effect
-        const pivotPoint = this.convertWorldToCameraSpace(
+        const pivotPoint = this.convertWorldToViewSpace(
             { x: 0, y: this.gameState.player.y }
         ).y;
 
-        const cameraSpaceTilted: Position3d = this.tiltOnZAxis(cameraSpaceP, pivotPoint, this.tiltAngle)
+        const cameraSpaceTilted: Position3d = this.tiltOnZAxis(viewSpaceP, pivotPoint, this.tiltAngle) // Rotates around the x-axis ona point on the y-axis
 
-        //3 . Convert the camera space position to the virtual screen space
+        //3 . Convert the camera space -> to the virtual screen space
         const x = /*(this.screenY / cameraSpaceTilted.y) * */ cameraSpaceTilted.x
         const y = /*(this.screenY / cameraSpaceTilted.y) * */ cameraSpaceTilted.z
 
-        // 4. convert the virtual screen space to the HTMLcanvas space
+        // 4. Convert the virtual screen space to the HTMLcanvas space
         return {
             // X=0 should be centered on the canvas
             // World X: -10 .. 10 => 0 .. 20 => 0..1 //assumption is that the world x is only between -10 and 10
