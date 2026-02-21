@@ -170,13 +170,26 @@ export class Chase3dRenderer extends BaseRenderer {
         // If you wanted to rotate the point around something other than the origin (e.g. the camera)
         // you need to first translate the whole system so that the point of rotation is at the origin.
         //  Then perform the rotation. And finally, undo the translation
-        const zAfterTilt = ((position.z - pivotPoint) * Math.cos(tiltAngle)) + pivotPoint // y cos(angle) -- and translated around the pivot point
-        const yAfterTilt = ((position.z - pivotPoint) * Math.sin(tiltAngle)) + pivotPoint // y sin(angle) -- and translated around the pivot point
+        // 1. Translate the system so that the pivot point is at the origin
+        const zInit = position.z - pivotPoint;
+        const yInit = position.y - pivotPoint;
+
+        // 2. Perform the rotation
+        //https://academo.org/demos/rotation-about-point/ - this is the formula for rotation about a point
+        // x (web) is z therefore x' = xcos(angle) - ysin(angle) (web form but we replace x with z )=> z' = zcos(angle) - ysin(angle)
+        // y (web) is y therefore y' = ycos(angle) + xsin(angle) (web form but we replace x with z) => y' = ycos(angle) + zsin(angle)
+        const zAfterTilt = zInit * Math.cos(tiltAngle) - yInit * Math.sin(tiltAngle) // z' = zcos(angle) - ysin(angle)
+        const yAfterTilt = yInit * Math.cos(tiltAngle) + zInit * Math.sin(tiltAngle) //  ycos(angle) + zsin(angle)
+
+
+        // 3. Undo the translation so that the pivot point is at the original position
+        const zOriginalCoordinateSpace = zAfterTilt + pivotPoint;
+        const yOriginalCoordinateSpace = yAfterTilt + pivotPoint;
 
         return {
             x: position.x, // x is unchanged by the tilt of the game board around the x axis
-            y: yAfterTilt,
-            z: zAfterTilt
+            y: yOriginalCoordinateSpace,
+            z: zOriginalCoordinateSpace
         };
     }
 
@@ -184,45 +197,53 @@ export class Chase3dRenderer extends BaseRenderer {
     // Pulls everything towards the camera on the y axis
     // && Sets z as the depth of the world position from the camera 
     // (as is normal in 3D graphics and perspective projection)
-    convertWorldToViewSpace(worldPosition: Position): Position3d {
+    convertWorldToViewSpace(worldPosition: Position3d): Position3d {
         return {
-            x: - worldPosition.x,
-            y: 0,
+            x: - worldPosition.x, // not sure why this needs to be negative - but otherwise steering is reversed
+            y: worldPosition.z,
             z: -(worldPosition.y - this.cameraY)
         }
     }
 
+
     translateWorldToCanvas(worldPosition: Position, projectionObjectName: string | null = null): Position {
-        if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
-            console.log(`\n\n 🅰️💡 - Projection object name: ${projectionObjectName} -- World position: ${worldPosition.x}, ${worldPosition.y} -- current camera y: ${this.cameraY}`);
-        }
+        return this.translateWorldToCanvas3d({ x: worldPosition.x, y: worldPosition.y, z: 0 }, projectionObjectName);
+    }
+
+
+    translateWorldToCanvas3d(worldPosition: Position3d, projectionObjectName: string | null = null): Position {
+        // if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
+        //     console.log(`\n\n 🅰️💡 - Projection object name: ${projectionObjectName} -- World position: ${worldPosition.x}, ${worldPosition.y} -- current camera y: ${this.cameraY}`);
+        // }
         // 1. World spcae -> View space
         // Pull everything toward the camera on the y axis
         const viewSpaceBeforeTilit: Position3d = this.convertWorldToViewSpace(worldPosition)
+        // if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
+        //     console.log(`🅱️💡 - View space before tilt: ${viewSpaceBeforeTilit.x}, ${viewSpaceBeforeTilit.y} ${viewSpaceBeforeTilit.z}`);
+        // }
 
-        if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
-            console.log(`🅱️💡 - View space before tilt: ${viewSpaceBeforeTilit.x}, ${viewSpaceBeforeTilit.y} ${viewSpaceBeforeTilit.z}`);
-        }
+
         // 2. Tilt the "board" around the pivot point on the view-space z-axis
         // This gives it some height on the view-space y-axis (otherwise view-space y would be 0 for everything)
         const pivotPoint = this.convertWorldToViewSpace(
-            { x: 0, y: this.gameState.player.y }
+            { x: 0, y: this.gameState.player.y, z: 0 }
         ).z;
 
         const viewSpace: Position3d = this.tiltBoardUpwards(viewSpaceBeforeTilit, pivotPoint, this.tiltAngle) // Rotates around the x-axis ona point on the y-axis
+        // if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
+        //     console.log(`🅱️💡 - View space after tilt: ${viewSpace.x}, ${viewSpace.y} ${viewSpace.z}`);
+        // }
 
-        if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
-            console.log(`🅱️💡 - View space after tilt: ${viewSpace.x}, ${viewSpace.y} ${viewSpace.z}`);
-        }
+
         //3 . Convert the camera space -> to the virtual image plane
-        const screenDistanceInViewSpace = this.convertWorldToViewSpace({ x: 0, y: this.screenY }).z
+        const screenDistanceInViewSpace = this.convertWorldToViewSpace({ x: 0, y: this.screenY, z: 0 }).z
         const psy = (screenDistanceInViewSpace / -viewSpace.z) * viewSpace.y
         const psx = (screenDistanceInViewSpace / -viewSpace.z) * viewSpace.x
+        // if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
+        //     console.log(`🅲️💡 - Virtual Image Plane: ${psx}, ${psy}  -- n: ${screenDistanceInViewSpace}`);
+        // }
 
 
-        if (projectionObjectName == 'playerName' /*&& worldPosition.y >= this.cameraY*/) {
-            console.log(`🅲️💡 - Virtual Image Plane: ${psx}, ${psy}  -- n: ${screenDistanceInViewSpace}`);
-        }
         // 4. Convert the virtual image plane to the HTMLcanvas space (normalised to htmlCanvasSize)
         return {
             // X=0 should be centered on the canvas
@@ -237,70 +258,69 @@ export class Chase3dRenderer extends BaseRenderer {
         };
     }
 
-    // Translate the player to the canvas coordinates
-    // This is because the player is in world coordinates, but the canvas is in canvas coordinates
-    // translatedVehicle(vehicle: Vehicle): CanvasVehicle {
 
-    //     let translatedCenter = this.translateWorldToCanvas(vehicle, vehicle.name)
+    drawCar(car: Vehicle): void {
 
-    //     return {
-    //         x: translatedCenter.x,
-    //         y: translatedCenter.y,
-    //         steeringAngle: vehicle.steeringAngle,
-    //         width: this.translateLengthOnXAxisToCanvas(vehicle.width),
-    //         length: this.translateLengthOnYAxisToCanvas(vehicle.length),
-    //         color: vehicle.color,
-    //         lighterColor: vehicle.lighterColor
-    //     };
-
-    // }
-
-    drawCar(canvasPlayer: Vehicle): void {
-
-        const bottomLeft = this.translateWorldToCanvas({ x: canvasPlayer.x - canvasPlayer.width / 2, y: canvasPlayer.y - canvasPlayer.length / 2 })
-        const bottomRight = this.translateWorldToCanvas({ x: canvasPlayer.x + canvasPlayer.width / 2, y: canvasPlayer.y - canvasPlayer.length / 2 })
-        const topRight = this.translateWorldToCanvas({ x: canvasPlayer.x + canvasPlayer.width / 2, y: canvasPlayer.y + canvasPlayer.length / 2 })
-        const topLeft = this.translateWorldToCanvas({ x: canvasPlayer.x - canvasPlayer.width / 2, y: canvasPlayer.y + canvasPlayer.length / 2 })
+        const halfWidth = car.width / 2;
+        const halfLength = car.length / 2;
+        const bottomLeft = this.translateWorldToCanvas({ x: car.x - halfWidth, y: car.y - halfLength })
+        const bottomRight = this.translateWorldToCanvas({ x: car.x + halfWidth, y: car.y - halfLength })
+        const topRight = this.translateWorldToCanvas({ x: car.x + halfWidth, y: car.y + halfLength })
+        const topLeft = this.translateWorldToCanvas({ x: car.x - halfWidth, y: car.y + halfLength })
 
         //Draw main body box
-        this.canvas.drawQuadrilateral(bottomLeft, bottomRight, topRight, topLeft, canvasPlayer.color);
+        this.canvas.drawQuadrilateral(bottomLeft, bottomRight, topRight, topLeft, car.color);
 
         // // Draw the roof of the car
+        const roofScale = 0.6;
+        const roofScaleWidth = halfWidth * roofScale;
+        const roofScaleLength = halfLength * roofScale;
+        const roofHeight = roofScaleWidth;
+        const roofBottomLeft = this.translateWorldToCanvas3d({ x: car.x - roofScaleWidth, y: car.y - roofScaleLength, z: roofHeight })
+        const roofBottomRight = this.translateWorldToCanvas3d({ x: car.x + roofScaleWidth, y: car.y - roofScaleLength, z: roofHeight })
+        const roofTopRight = this.translateWorldToCanvas3d({ x: car.x + roofScaleWidth, y: car.y + roofScaleLength, z: roofHeight })
+        const roofTopLeft = this.translateWorldToCanvas3d({ x: car.x - roofScaleWidth, y: car.y + roofScaleLength, z: roofHeight })
+
+        //Draw main body box
+        this.canvas.drawQuadrilateral(roofBottomLeft, roofBottomRight, roofTopRight, roofTopLeft, car.lighterColor);
+
+
+
         // const roofScale = 0.67;
         // this.canvas.drawRect(
-        //     canvasPlayer.x,
-        //     canvasPlayer.y,
-        //     canvasPlayer.steeringAngle,
-        //     canvasPlayer.width * roofScale,
-        //     canvasPlayer.length * roofScale,
-        //     canvasPlayer.lighterColor
+        //     car.x,
+        //     car.y,
+        //     car.steeringAngle,
+        //     car.width * roofScale,
+        //     car.length * roofScale,
+        //     car.lighterColor
         // );
 
 
 
         // Draw headlights positioned at the front of the car, rotated with the car
-        // const cos = Math.cos(canvasPlayer.steeringAngle * Math.PI / 180);
-        // const sin = Math.sin(canvasPlayer.steeringAngle * Math.PI / 180);
+        // const cos = Math.cos(car.steeringAngle * Math.PI / 180);
+        // const sin = Math.sin(car.steeringAngle * Math.PI / 180);
 
         // // One headlight at -1, and one at +1 - so we get a left and right headlight
         // for (let i = -1; i <= 1; i += 2) {
 
         //     // Headlight positions in car's local coordinate system (before rotation)
         //     // Front of car is at -length/2 in local Y, headlights are at ±width/4 in local X
-        //     const headlightLocalX = i * canvasPlayer.width / 4;
-        //     const headlightLocalY = - canvasPlayer.length / 2;
+        //     const headlightLocalX = i * car.width / 4;
+        //     const headlightLocalY = - car.length / 2;
 
         //     // Rotate and translate headlight positions to canvas coordinates
-        //     const headlightX = canvasPlayer.x + (headlightLocalX * cos) - (headlightLocalY * sin);
-        //     const headlightY = canvasPlayer.y + (headlightLocalX * sin) + (headlightLocalY * cos);
+        //     const headlightX = car.x + (headlightLocalX * cos) - (headlightLocalY * sin);
+        //     const headlightY = car.y + (headlightLocalX * sin) + (headlightLocalY * cos);
 
         //     // Draw headlights rotated to face the car's direction
         //     this.canvas.drawRect(
         //         headlightX,
         //         headlightY,
-        //         canvasPlayer.steeringAngle,
-        //         canvasPlayer.width / 5,
-        //         canvasPlayer.length / 10,
+        //         car.steeringAngle,
+        //         car.width / 5,
+        //         car.length / 10,
         //         'yellow'
         //     );
         // }
