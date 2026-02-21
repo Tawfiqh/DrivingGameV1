@@ -22,7 +22,7 @@ export class Chase3dRenderer extends BaseRenderer {
     readonly backgroundColor = '#7a8a26';
 
 
-    readonly tiltAngle: number = degreesToRadians(55);
+    readonly tiltAngle: number = degreesToRadians(57);
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     // x and y position of the camera are 0
@@ -246,7 +246,7 @@ export class Chase3dRenderer extends BaseRenderer {
 
 
         // 4. Convert the virtual image plane to the HTMLcanvas space (normalised to htmlCanvasSize)
-        const xMax = 2
+        const xMax = 3
         const yScale = 12 // lower is more zoomed in
         return {
             // X=0 should be centered on the canvas
@@ -264,7 +264,7 @@ export class Chase3dRenderer extends BaseRenderer {
 
     drawCar(car: Vehicle): void {
 
-        if car.y <= this.cameraY {
+        if (car.y <= this.cameraY) {
             return
         }
         const halfWidth = car.width / 2;

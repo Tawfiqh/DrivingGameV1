@@ -43,8 +43,7 @@ export class CarGame {
     readonly FPS: number = 120;
     readonly runLoopIntervalMilliseconds: number = 1000 / this.FPS / 2; // Twice the FPS
     // x -axis runs from -10 to 10
-    readonly xAxisRange: number = 20;
-    readonly roadWidth: number = this.xAxisRange / 2;
+    readonly roadWidth: number = 15;
     static readonly startY: number = 10;
 
     //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
