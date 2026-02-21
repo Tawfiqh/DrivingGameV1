@@ -171,16 +171,18 @@ export class TopDown2dRenderer extends BaseRenderer {
     }
 
     translateWorldToCanvas(worldPosition: Position): Position {
+        const xRange = 15;
+        const yScale = 45;
         return {
             // X=0 should be centered on the canvas
             // World X: -10 .. 10 => 0 .. 20 => 0..10 //assumption is that the world x is only between -10 and 10
             // Canvas X: 0..MapWidth
-            x: (worldPosition.x + 10) / 20 * this.htmlCanvasSize,
+            x: (worldPosition.x + xRange) / (xRange * 2) * this.htmlCanvasSize,
 
             // World Y: 0..10 (displayed on screen)
             // Canvas Y: 0..MapHeight
             // Y should be at the bottom of the canvas
-            y: (this.htmlCanvasSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.htmlCanvasSize)),
+            y: (this.htmlCanvasSize - (((worldPosition.y - this.canvasCenterInWorldY) / yScale) * this.htmlCanvasSize)),
         };
     }
 
