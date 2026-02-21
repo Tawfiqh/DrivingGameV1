@@ -6,7 +6,7 @@ export class Canvas {
     scaleFactor: number;
 
 
-    constructor(canvas: HTMLCanvasElement, initialMapSize: number, scaleFactor: number) {
+    constructor(canvas: HTMLCanvasElement, htmlCanvasSize: number, scaleFactor: number) {
         const context = canvas.getContext("2d");
         if (!context) {
             throw new Error("Could not get 2d context from canvas");
@@ -14,8 +14,8 @@ export class Canvas {
         this.ctx = context;
 
         this.canvas = canvas;
-        this.canvas.width = initialMapSize;
-        this.canvas.height = initialMapSize;
+        this.canvas.width = htmlCanvasSize;
+        this.canvas.height = htmlCanvasSize;
 
         this.scaleFactor = scaleFactor;
 

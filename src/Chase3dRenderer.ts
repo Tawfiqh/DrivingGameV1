@@ -57,8 +57,8 @@ export class Chase3dRenderer extends BaseRenderer {
     updateCanvasCenterInWorld(playerY: number): void {
         const yOffset = this.gameState.player.length * 2; // yOffset is to adjust for the player being at the bottom centre of the screen
 
-        this.cameraY = playerY - (2 * yOffset)
-        this.screenY = playerY - yOffset
+        this.cameraY = playerY - (2 * yOffset) // Eye of the camera in world space
+        this.screenY = playerY - yOffset //Near clipping plane of the frustum in world space
     }
 
     drawRoad(): void { //TBC - this could be simpler if we don't constantly redraw
@@ -173,14 +173,14 @@ export class Chase3dRenderer extends BaseRenderer {
     }
 
 
-    tiltOnZAxis(position: Position, pivotPointY: number, tiltAngle: number): Position3d {
+    tiltBoardUpwards(position: Position3d, pivotPoint: number, tiltAngle: number): Position3d {
 
 
         // If you wanted to rotate the point around something other than the origin (e.g. the camera)
         // you need to first translate the whole system so that the point of rotation is at the origin.
         //  Then perform the rotation. And finally, undo the translation
-        const yAfterTilt = ((position.y - pivotPointY) * Math.cos(tiltAngle)) + pivotPointY // y cos(angle) -- and translated around the pivot point
-        const zAfterTilt = ((position.y - pivotPointY) * Math.sin(tiltAngle)) + pivotPointY // y sin(angle) -- and translated around the pivot point
+        const zAfterTilt = ((position.z - pivotPoint) * Math.cos(tiltAngle)) + pivotPoint // y cos(angle) -- and translated around the pivot point
+        const yAfterTilt = ((position.z - pivotPoint) * Math.sin(tiltAngle)) + pivotPoint // y sin(angle) -- and translated around the pivot point
 
         return {
             x: position.x, // x is unchanged by the tilt of the game board around the x axis
@@ -189,12 +189,16 @@ export class Chase3dRenderer extends BaseRenderer {
         };
     }
 
-    readonly tiltAngle: number = degreesToRadians(50);
+    readonly tiltAngle: number = degreesToRadians(80);
 
-    convertWorldToViewSpace(worldPosition: Position): Position {
+    // Pulls everything towards the camera on the y axis
+    // && Sets z as the depth of the world position from the camera 
+    // (as is normal in 3D graphics and perspective projection)
+    convertWorldToViewSpace(worldPosition: Position): Position3d {
         return {
             x: worldPosition.x,
-            y: worldPosition.y - this.screenY
+            y: 0,
+            z: -(worldPosition.y - this.cameraY)
         }
     }
 
@@ -202,35 +206,34 @@ export class Chase3dRenderer extends BaseRenderer {
 
         // 1. World spcae -> View space
         // Pull everything toward the camera on the y axis
-        // const screenOffset = 50;
-        // const screenPositionY = this.cameraY + screenOffset
-
-        const viewSpaceP: Position = this.convertWorldToViewSpace(worldPosition)
+        const viewSpaceBeforeTilit: Position3d = this.convertWorldToViewSpace(worldPosition)
 
 
-        // 2. Tilt the "board" around the pivot point on the y-axis
-        // Tilt on z-axis to give a 3D effect
+        // 2. Tilt the "board" around the pivot point on the view-space z-axis
+        // This gives it some height on the view-space y-axis (otherwise view-space y would be 0 for everything)
         const pivotPoint = this.convertWorldToViewSpace(
             { x: 0, y: this.gameState.player.y }
-        ).y;
+        ).z;
 
-        const cameraSpaceTilted: Position3d = this.tiltOnZAxis(viewSpaceP, pivotPoint, this.tiltAngle) // Rotates around the x-axis ona point on the y-axis
+        const viewSpace: Position3d = this.tiltBoardUpwards(viewSpaceBeforeTilit, pivotPoint, this.tiltAngle) // Rotates around the x-axis ona point on the y-axis
 
         //3 . Convert the camera space -> to the virtual screen space
-        const x = /*(this.screenY / cameraSpaceTilted.y) * */ cameraSpaceTilted.x
-        const y = /*(this.screenY / cameraSpaceTilted.y) * */ cameraSpaceTilted.z
+        const screenDistanceInViewSpace = this.convertWorldToViewSpace({ x: 0, y: this.screenY }).z
+        const psy = (screenDistanceInViewSpace / -viewSpace.z) * viewSpace.y
+        const psx = (screenDistanceInViewSpace / -viewSpace.z) * viewSpace.x
 
-        // 4. Convert the virtual screen space to the HTMLcanvas space
+
+        // 4. Convert the virtual screen space to the HTMLcanvas space (normalised to htmlCanvasSize)
         return {
             // X=0 should be centered on the canvas
             // World X: -10 .. 10 => 0 .. 20 => 0..1 //assumption is that the world x is only between -10 and 10
             // Canvas X: 0..MapWidth
-            x: (x + 10) / 20 * this.initialMapSize,
+            x: (psx + 10) / 20 * this.htmlCanvasSize,
 
             // World Y: 0..10 (displayed on screen)
             // Canvas Y: 0..MapHeight
             // Y should be at the bottom of the canvas
-            y: this.initialMapSize - ((y / 10) * this.initialMapSize),
+            y: this.htmlCanvasSize - ((psy / 10) * this.htmlCanvasSize),
         };
     }
 

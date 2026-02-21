@@ -5,7 +5,7 @@ export class BaseRenderer {
 
     // Constants =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     readonly scaleFactor = 10;
-    readonly initialMapSize: number = 200 * this.scaleFactor;
+    readonly htmlCanvasSize: number = 200 * this.scaleFactor;
     readonly FPS: number = 120;
 
 
@@ -21,7 +21,7 @@ export class BaseRenderer {
         this.gameOver = gameOver;
 
         // set width and height to initial map-size
-        this.canvas = new Canvas(canvas, this.initialMapSize, this.scaleFactor);
+        this.canvas = new Canvas(canvas, this.htmlCanvasSize, this.scaleFactor);
 
 
         this.renderLoopInterval = setInterval(() => {

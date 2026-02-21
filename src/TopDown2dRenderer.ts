@@ -175,12 +175,12 @@ export class TopDown2dRenderer extends BaseRenderer {
             // X=0 should be centered on the canvas
             // World X: -10 .. 10 => 0 .. 20 => 0..10 //assumption is that the world x is only between -10 and 10
             // Canvas X: 0..MapWidth
-            x: (worldPosition.x + 10) / 20 * this.initialMapSize,
+            x: (worldPosition.x + 10) / 20 * this.htmlCanvasSize,
 
             // World Y: 0..10 (displayed on screen)
             // Canvas Y: 0..MapHeight
             // Y should be at the bottom of the canvas
-            y: (this.initialMapSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.initialMapSize)),
+            y: (this.htmlCanvasSize - (((worldPosition.y - this.canvasCenterInWorldY) / 10) * this.htmlCanvasSize)),
         };
     }
 
