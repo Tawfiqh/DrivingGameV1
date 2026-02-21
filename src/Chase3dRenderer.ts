@@ -245,11 +245,12 @@ export class Chase3dRenderer extends BaseRenderer {
 
 
         // 4. Convert the virtual image plane to the HTMLcanvas space (normalised to htmlCanvasSize)
+        const xMax = 3
         return {
             // X=0 should be centered on the canvas
             // World X: -10 .. 10 => 0 .. 20 => 0..1 //assumption is that the world x is only between -10 and 10
             // Canvas X: 0..MapWidth
-            x: (psx + 10) / 20 * this.htmlCanvasSize,
+            x: (psx + xMax) / (xMax * 2) * this.htmlCanvasSize,
 
             // World Y: 0..10 (displayed on screen)
             // Canvas Y: 0..MapHeight
