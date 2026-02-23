@@ -4,38 +4,38 @@ import PlaygroundSupport
 
 struct ContentView: View {
     @State var gameOverVisible: Bool = false
-    @State var viewPort3dEnabled : Bool = false
+    @State var viewPort3dEnabled: Bool = false
     
     @State var currentGame: CarGame = CarGame()
-    
-    
+    let renderer = TopDown2dRenderer()
     
     var body: some View {
         Text("Car Drive").font(.title)
         
-        VStack{
+        VStack {
             Text("Use the arrow-keys/WASD to move. On mobile swipe up/down to accelerate and left/right to steer.").font(.body)
             Toggle("3D View", isOn: $viewPort3dEnabled)
         }
         
-        ZStack{
-            VStack{
-                Text("Score: 0").font(.title) // TBC - update with actual score
+        ZStack {
+            VStack {
+                Text("Score: \(Int(currentGame.gameState.score))").font(.title)
                 Text("Game Over - refresh to play again").font(.title)
                 Button(action: restart) {
                     Text("Refresh")
                 }
             }.opacity(gameOverVisible ? 1 : 0)
             
-            GameCanvas()
+            GameCanvas { drawer in
+                renderer.render(canvas: drawer, gameState: currentGame.gameState)
+            }
         }
 
     }// end of the body: some View
     
-    func restart(){
+    func restart() {
         print("TBC - restarting game")
     }
-    
     
 } //end of the ContentView:View struct
 
