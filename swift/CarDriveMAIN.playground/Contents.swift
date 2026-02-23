@@ -1,122 +1,173 @@
-//: A SpriteKit based Playground
-
+// A SwiftUI Canvas based Playground
+import SwiftUI
 import PlaygroundSupport
-import SpriteKit
 
-//let gameCanvas = Canvas(type: .spritekit,
-//                                frame: CGSize(width: 375.0, height: 667.0)
-//)
-
-//    Playground Container Setup
-//
-
-//let gameView : CGFloat = 100
-//let scaleFactor : CGFloat = 2.5
-//let containerWidth: CGFloat = gameView * scaleFactor
-//let containerHeight: CGFloat = containerWidth
-//let containerCenter: CGPoint = CGPoint(x: (containerWidth/2), y: (containerHeight/2))
-//let containerView = SKView(frame: CGRect(x: 0.0, y: 0.0, width: containerWidth, height: containerHeight))
-//
-//PlaygroundPage.current.liveView = containerView
-//
-//let carGame = CarGame();
-//let renderer = TopDown2dRenderer(carGame.gameState, gameCanvas, gameOver);
-//
-//let containterScene: SKScene = SKScene(size: CGSize(width: containerWidth, height: containerHeight))
-//containerView.presentScene(containterScene)
-//
-//
-//
-//gameCanvas.showView()
-
-
-class GameScene: SKScene {
+struct ContentView: View {
+    @State var gameOverVisible: Bool = false
+    @State var viewPort3dEnabled : Bool = false
     
-    private var label : SKLabelNode!
-    private var spinnyNode : SKShapeNode!
+    @State var currentGame: CarGame = CarGame()
     
-    override func didMove(to view: SKView) {
-        // Get label node from scene and store it for use later
-        label = childNode(withName: "//helloLabel") as? SKLabelNode
-        label.alpha = 0.0
-        let fadeInOut = SKAction.sequence([.fadeIn(withDuration: 2.0),
-                                           .fadeOut(withDuration: 2.0)])
-        label.run(.repeatForever(fadeInOut))
-        
-        // Create shape node to use during mouse interaction
-        let w = (size.width + size.height) * 0.05
-        
-        spinnyNode = SKShapeNode(rectOf: CGSize(width: w, height: w), cornerRadius: w * 0.3)
-        spinnyNode.lineWidth = 2.5
-        
-        let fadeAndRemove = SKAction.sequence([.wait(forDuration: 0.5),
-                                               .fadeOut(withDuration: 0.5),
-                                               .removeFromParent()])
-        spinnyNode.run(.repeatForever(.rotate(byAngle: CGFloat(Double.pi), duration: 1)))
-        spinnyNode.run(fadeAndRemove)
-    }
     
-    @objc static override var supportsSecureCoding: Bool {
-        // SKNode conforms to NSSecureCoding, so any subclass going
-        // through the decoding process must support secure coding
-        get {
-            return true
+    
+    var body: some View {
+        Text("Car Drive").font(.title)
+        
+        VStack{
+            Text("Use the arrow-keys/WASD to move. On mobile swipe up/down to accelerate and left/right to steer.").font(.body)
+            Toggle("3D View", isOn: $viewPort3dEnabled)
         }
-    }
-    
-    func touchDown(atPoint pos : CGPoint) {
-        guard let n = spinnyNode.copy() as? SKShapeNode else { return }
         
-        n.position = pos
-        n.strokeColor = SKColor.green
-        addChild(n)
-    }
-    
-    func touchMoved(toPoint pos : CGPoint) {
-        guard let n = self.spinnyNode.copy() as? SKShapeNode else { return }
-        
-        n.position = pos
-        n.strokeColor = SKColor.blue
-        addChild(n)
-    }
-    
-    func touchUp(atPoint pos : CGPoint) {
-        guard let n = spinnyNode.copy() as? SKShapeNode else { return }
-        
-        n.position = pos
-        n.strokeColor = SKColor.red
-        addChild(n)
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { touchDown(atPoint: t.location(in: self)) }
-    }
-    
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { touchMoved(toPoint: t.location(in: self)) }
-    }
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { touchUp(atPoint: t.location(in: self)) }
-    }
-    
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { touchUp(atPoint: t.location(in: self)) }
-    }
-    
-    override func update(_ currentTime: TimeInterval) {
-        // Called before each frame is rendered
-    }
-}
+        ZStack{
+            VStack{
+                Text("Score: 0").font(.title) // TBC - update with actual score
+                Text("Game Over - refresh to play again").font(.title)
+                Button(action: restart) {
+                    Text("Refresh")
+                }
+            }.opacity(gameOverVisible ? 1 : 0)
+            
+            GameCanvas()
+        }
 
-// Load the SKScene from 'GameScene.sks'
-let sceneView = SKView(frame: CGRect(x:0 , y:0, width: 640, height: 480))
-if let scene = GameScene(fileNamed: "GameScene") {
-    // Set the scale mode to scale to fit the window
-    scene.scaleMode = .aspectFill
+    }// end of the body: some View
     
-    // Present the scene
-    sceneView.presentScene(scene)
-}
+    func restart(){
+        print("TBC - restarting game")
+    }
+    
+    
+} //end of the ContentView:View struct
 
-PlaygroundSupport.PlaygroundPage.current.liveView = sceneView
+
+// Present the view controller in the Live View window
+PlaygroundPage.current.setLiveView(ContentView())
+
+//<script type="module">
+//    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    // Game initialisation
+//    const carGame = new CarGame();
+//
+//    const startWith3d = true;
+//    // Start with 3D view
+//    let currentRenderer = { stop: () => { }, start: () => { } };
+//    if (startWith3d) {
+//        toggleView(Chase3dRenderer, view3d);
+//    } else {
+//        toggleView(TopDown2dRenderer, view2d);
+//    }
+//
+//</script>
+
+
+//-=-=-=
+//<head>
+//    <style>
+//        :root {
+//            --main-color: red;
+//        }
+//
+//        html,
+//        body {
+//            /* this is to prevent the page from scrolling when playing on mobile */
+//            height: 100%;
+//            width: 100%;
+//            overflow: hidden;
+//        }
+//
+//        body {
+//            background-color: black;
+//            font-family: Arial, sans-serif;
+//            color: white;
+//        }
+//
+//        canvas {
+//            border: 1px solid var(--main-color);
+//            width: min(80vw, 80vh);
+//            height: min(80vw, 80vh);
+//
+//        }
+//
+//        #gameCanvas {
+//            border: 1px solid greenyellow;
+//            border-radius: 10px;
+//        }
+//
+//        #gameOver {
+//            display: none;
+//            width: 50%;
+//            border: 1px solid greenyellow;
+//            border-radius: 10px;
+//
+//            padding: 20px;
+//            z-index: 10;
+//            text-align: center;
+//            font-family: 'Courier New', Courier, monospace;
+//
+//            background-color: greenyellow;
+//            color: black;
+//        }
+//
+//        .centreDiv {
+//            position: absolute;
+//            left: 50%;
+//            top: 50%;
+//            transform: translate(-50%, -50%);
+//        }
+//
+//        #refreshButton {
+//            background-color: orange;
+//            color: black;
+//            border: 1px solid black;
+//            border-radius: 5px;
+//            padding: 10px 20px;
+//            font-family: 'Courier New', Courier, monospace;
+//            font-weight: bold;
+//            font-size: 1.2em;
+//            cursor: pointer;
+//            transition: background-color 0.3s ease;
+//
+//            &:hover {
+//                background-color: darkorange;
+//                box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+//            }
+//        }
+//
+//        .view-toggle {
+//            display: flex;
+//            align-items: center;
+//            gap: 8px;
+//            margin-top: 10px;
+//        }
+//
+//        .view-label {
+//            font-size: 0.9em;
+//            color: #ccc;
+//        }
+//
+//        .view-btn {
+//            background: #333;
+//            color: #ccc;
+//            border: 1px solid #555;
+//            border-radius: 6px;
+//            padding: 6px 14px;
+//            font-family: 'Courier New', Courier, monospace;
+//            font-size: 0.95em;
+//            cursor: pointer;
+//            transition: background 0.2s, color 0.2s, border-color 0.2s;
+//        }
+//
+//        .view-btn:hover {
+//            background: #444;
+//            color: white;
+//            border-color: greenyellow;
+//        }
+//
+//        .view-btn.active {
+//            background: greenyellow;
+//            color: black;
+//            border-color: greenyellow;
+//        }
+//    </style>
+//</head>
+
