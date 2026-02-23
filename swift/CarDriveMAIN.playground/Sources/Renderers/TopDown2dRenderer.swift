@@ -21,10 +21,13 @@ public class TopDown2dRenderer {
     let backgroundColor = Color(red: 0.48, green: 0.54, blue: 0.15)
 
     var canvasCenterInWorldY: Double = 0
+    // Actual pixel dimension of the canvas – updated each render call
+    var dimension: Double = TopDown2dRenderer.htmlCanvasSize
 
     public init() {}
 
     public func render(canvas: CanvasDrawer, gameState: GameState) {
+        dimension = canvas.size.width   // use the real canvas size for coordinate mapping
         canvas.clearCanvas(backgroundColor: backgroundColor)
 
         updateCanvasCenterInWorld(playerY: gameState.player.y)
@@ -135,9 +138,11 @@ public class TopDown2dRenderer {
     // MARK: - Score
 
     func renderScore(canvas: CanvasDrawer, score: Double) {
-        let fontSize = 12.0 * TopDown2dRenderer.scaleFactor
-        let xPos = 10.0 * TopDown2dRenderer.scaleFactor
-        let yPos = 15.0 * TopDown2dRenderer.scaleFactor
+        // Scale relative to actual canvas size
+        let scale    = dimension / TopDown2dRenderer.htmlCanvasSize
+        let fontSize = 12.0 * TopDown2dRenderer.scaleFactor * scale
+        let xPos     = 10.0 * TopDown2dRenderer.scaleFactor * scale
+        let yPos     = 15.0 * TopDown2dRenderer.scaleFactor * scale
         canvas.drawText(x: xPos, y: yPos, fontSize: fontSize, text: "Score: \(Int(score))", color: Color(red: 0.49, green: 1.0, blue: 0.08))
     }
 
@@ -146,10 +151,9 @@ public class TopDown2dRenderer {
     func translateWorldToCanvas(_ worldPosition: Position) -> CGPoint {
         let xRange: Double = 15
         let yScale: Double = 45
-        let canvasSize = TopDown2dRenderer.htmlCanvasSize
         return CGPoint(
-            x: (worldPosition.x + xRange) / (xRange * 2) * canvasSize,
-            y: canvasSize - (((worldPosition.y - canvasCenterInWorldY) / yScale) * canvasSize)
+            x: (worldPosition.x + xRange) / (xRange * 2) * dimension,
+            y: dimension - (((worldPosition.y - canvasCenterInWorldY) / yScale) * dimension)
         )
     }
 
