@@ -1,0 +1,12 @@
+# EditorConfig: https://editorconfig.org
+# Tabs as spaces, 4 spaces for this project
+
+root = true
+
+[*.swift]
+indent_style = space
+indent_size = 4
+
+[*]
+indent_style = space
+indent_size = 4
