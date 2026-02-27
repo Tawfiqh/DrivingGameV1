@@ -1,6 +1,7 @@
 TODO List 
 =========
-ss
+
+
 Basic game
 ----------
 1. ✅ Basic run loop - updating game state and rendering
@@ -39,8 +40,19 @@ Basic game
 
 3d Rendering
 -------------
-1. 3d rednering that follows the car - based on chat GPT projection
-2. Start with basic reimplementation of the 2d renderer
+1. ✅ 3d rednering that follows the car
+
+
+iOS
+-------------
+✅ 1. Toggle to switch between 2d and 3d
+✅ 2. 3d Rendering
+3. Show score
+4. Show end game screen
+5. Migrate to Godot or something
+
+Store Kit
+-------------
 
 
 
