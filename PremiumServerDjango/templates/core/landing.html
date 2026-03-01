@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Django Template{% endblock %}
+
+{% block content %}
+<h1>Welcome to Django Template</h1>
+
+<p>This is a reusable Django project template with document management capabilities.</p>
+
+{% if user.is_authenticated %}
+    <p>Hello, {{ user.username }}! You can <a href="{% url 'document-upload' %}">upload documents</a> or <a href="{% url 'my-documents' %}">view your documents</a>.</p>
+{% else %}
+    <p><a href="{% url 'register' %}">Register</a> or <a href="{% url 'login' %}">login</a> to upload and manage your documents.</p>
+{% endif %}
+
+<h2>Recent Public Documents</h2>
+
+{% if recent_documents %}
+    <ul>
+        {% for document in recent_documents %}
+            <li>
+                <a href="{% url 'document-detail' document.pk %}">{{ document.title }}</a>
+                {% if document.subject %} - {{ document.subject }}{% endif %}
+                <small>(Uploaded by {{ document.owner.username }} on {{ document.upload_datetime|date:"M d, Y" }})</small>
+            </li>
+        {% endfor %}
+    </ul>
+    <p><a href="{% url 'document-list' %}">View all public documents</a></p>
+{% else %}
+    <p>No public documents available yet.</p>
+{% endif %}
+{% endblock %}

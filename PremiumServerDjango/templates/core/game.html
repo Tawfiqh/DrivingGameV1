@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Drive</title>
+    <style>
+        :root {
+            --main-color: red;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background-color: black;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        canvas {
+            border: 1px solid var(--main-color);
+            width: min(80vw, 80vh);
+            height: min(80vw, 80vh);
+        }
+
+        #gameCanvas {
+            border: 1px solid greenyellow;
+            border-radius: 10px;
+        }
+
+        #gameOver {
+            display: none;
+            width: 50%;
+            border: 1px solid greenyellow;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 10;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: greenyellow;
+            color: black;
+        }
+
+        .centreDiv {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #refreshButton {
+            background-color: orange;
+            color: black;
+            border: 1px solid black;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: darkorange;
+                box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        .view-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .view-label {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .view-btn {
+            background: #333;
+            color: #ccc;
+            border: 1px solid #555;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .view-btn:hover {
+            background: #444;
+            color: white;
+            border-color: greenyellow;
+        }
+
+        .view-btn.active {
+            background: greenyellow;
+            color: black;
+            border-color: greenyellow;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Car Drive</h1>
+    <div class="instructions-container">
+        <div class="instructions">
+            <p>Use the arrow-keys/WASD to move. On mobile swipe up/down to accelerate and left/right to steer.</p>
+            <div class="view-toggle">
+                <span class="view-label">View:</span>
+                <button type="button" id="view2d" class="view-btn" aria-pressed="false">2D</button>
+                <button type="button" id="view3d" class="view-btn" aria-pressed="false">3D</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas" class="centreDiv"></canvas>
+
+    <div id="gameOver" class="centreDiv">
+        <h1> Score: <span id="finalScore">0</span> </h1>
+        <h1> Game Over - refresh to play again </h1>
+        <button id="refreshButton" onclick="location.reload()">Refresh</button>
+    </div>
+
+    <script type="module">
+        import { TopDown2dRenderer } from '{% static "dist/TopDown2dRenderer.js" %}';
+        import { Chase3dRenderer } from '{% static "dist/Chase3dRenderer.js" %}';
+        import { CarGame } from '{% static "dist/CarGame.js" %}';
+
+        function resetAllButtons() {
+            function resetActiveButton(button) {
+                button.classList.remove('active');
+                button.setAttribute('aria-pressed', 'false');
+            }
+            resetActiveButton(view2d);
+            resetActiveButton(view3d);
+        }
+
+        function setActiveButton(button) {
+            button.classList.add('active');
+            button.setAttribute('aria-pressed', 'true');
+        }
+
+        function toggleView(view, button) {
+            if (currentRenderer.constructor !== view) {
+                currentRenderer.stop();
+                currentRenderer = new view(carGame.gameState, gameCanvas, gameOver);
+            }
+            resetAllButtons();
+            setActiveButton(button);
+        }
+
+        view3d.addEventListener('click', () => toggleView(Chase3dRenderer, view3d));
+        view2d.addEventListener('click', () => toggleView(TopDown2dRenderer, view2d));
+
+        const carGame = new CarGame();
+
+        const startWith3d = true;
+        let currentRenderer = { stop: () => { }, start: () => { } };
+        if (startWith3d) {
+            toggleView(Chase3dRenderer, view3d);
+        } else {
+            toggleView(TopDown2dRenderer, view2d);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - CarDriveDash{% endblock %}
+
+{% block content %}
+<h1>Login</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if form.errors %}
+        <ul class="messages">
+            <li class="error">Please correct the errors below.</li>
+        </ul>
+    {% endif %}
+
+    <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">Username:</label>
+        {{ form.username }}
+        {% if form.username.errors %}<div class="error">{{ form.username.errors }}</div>{% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.password.id_for_label }}">Password:</label>
+        {{ form.password }}
+        {% if form.password.errors %}<div class="error">{{ form.password.errors }}</div>{% endif %}
+    </div>
+
+    <button type="submit" class="btn">Login</button>
+</form>
+{% endblock %}
