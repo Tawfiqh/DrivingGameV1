@@ -1,0 +1,3 @@
+[submodule "ApplePlatforms"]
+	path = ApplePlatforms
+	url = https://github.com/Tawfiqh/ApplePlatforms.git
