@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'users',
     'core',
     'game_content',
+    'appstore',
 ]
 
 MIDDLEWARE = [
@@ -105,4 +106,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'admin:index'
 LOGOUT_REDIRECT_URL = 'landing'
+
+# App Store Server Integration
+# Download Apple root CA certs (DER format) from https://www.apple.com/certificateauthority/
+# and list their absolute paths here.
+APPSTORE_ROOT_CA_PATHS: list[str] = [
+    p for p in [
+        os.environ.get("APPSTORE_ROOT_CA_G3_PATH", ""),
+        os.environ.get("APPSTORE_ROOT_CA_G2_PATH", ""),
+    ] if p
+]
+APPSTORE_BUNDLE_ID = os.environ.get("APPSTORE_BUNDLE_ID", "uk.co.tawfiq.getawayrun")
+APPSTORE_APP_APPLE_ID: int | None = (
+    int(v) if (v := os.environ.get("APPSTORE_APP_APPLE_ID")) else None
+)
+APPSTORE_ENVIRONMENT = os.environ.get("APPSTORE_ENVIRONMENT", "Sandbox")
+APPSTORE_ENABLE_ONLINE_CHECKS = os.environ.get("APPSTORE_ENABLE_ONLINE_CHECKS", "true").lower() == "true"
+APPSTORE_SUBSCRIPTION_PRODUCT_IDS = ["plus.standard", "plus.premium"]
 
