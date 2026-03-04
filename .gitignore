@@ -5,3 +5,6 @@ dist
 *.log
 PremiumServerDjango/static/game/*
 PremiumServerDjango/secrets/*
+
+# App Store Connect IAP sync (local config with APP_ID)
+ApplePlatforms/scripts/iap-sync.config

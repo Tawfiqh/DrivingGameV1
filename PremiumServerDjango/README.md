@@ -93,6 +93,7 @@ Switch environments via the `DJANGO_SETTINGS_MODULE` environment variable. The d
 | `SECRET_KEY` | **Production** | `django-insecure-...` | Django secret key |
 | `DEBUG` | No | `True` (dev) / `False` (prod) | Debug mode |
 | `ALLOWED_HOSTS` | **Production** | `127.0.0.1,localhost` | Comma-separated allowed hosts |
+| `CSRF_TRUSTED_ORIGINS` | **Production** | `http://127.0.0.1:8000,https://<your-app>.up.railway.app` | Comma-separated trusted origins for CSRF protection |
 | `DJANGO_SETTINGS_MODULE` | **Production** | `config.settings.development` | Must be `config.settings.production` on Railway |
 | `APPSTORE_BUNDLE_ID` | Yes | `com.yourcompany.getawayrun` | App bundle ID (must match App Store Connect) |
 | `APPSTORE_APP_APPLE_ID` | **Production** | — | Numeric App Apple ID from App Store Connect |
@@ -101,7 +102,7 @@ Switch environments via the `DJANGO_SETTINGS_MODULE` environment variable. The d
 | `APPSTORE_ROOT_CA_G2_PATH` | No | — | Path to Apple Root CA G2 cert (DER format) |
 | `APPSTORE_ENABLE_ONLINE_CHECKS` | No | `true` | Enable OCSP certificate checks |
 | `SECURE_SSL_REDIRECT` | No | `False` | Redirect HTTP to HTTPS (set `True` on Railway) |
-
+CSRF_TRUSTED_ORIGINS=https://sundown-getaway-api-production.up.railway.app
 ## Deployment (Railway)
 
 ### 1. Create a Railway project
@@ -129,6 +130,18 @@ APPSTORE_ROOT_CA_G3_PATH=/app/certs/AppleRootCA-G3.cer
 
 ### 4. Deploy
 
+You can deploy using the deploy script:
+
+```bash
+./deploy.sh
+```
+
+this mostly just calls: 
+
+```bash
+railway up ./PremiumServerDjango
+```
+
 Railway will automatically:
 1. Install Python 3.12 (from `runtime.txt`)
 2. Install dependencies (from `requirements.txt`)
@@ -137,9 +150,30 @@ Railway will automatically:
 ### 5. Get your Railway URL
 
 After deployment, Railway assigns a public URL like `https://<your-app>.up.railway.app`. Use this URL in:
+You can find this by running `railway domain --json` in the Django project directory.
 
 - **iOS app**: Set it in `ApplePlatforms/CarDriveDash/Config/Release.xcconfig`
 - **App Store Connect**: Configure the webhook URL (see below)
+
+### 6. Run Management Commands on Railway
+
+SSH Into the Railway project:
+```bash
+railway ssh
+```
+
+Then you can run management commands on Railway by running:
+```bash
+source /opt/venv/bin/activate
+
+# e.g: Make a superuser
+python manage.py createsuperuser
+
+# Change password for a user
+python manage.py changepassword <username>
+```
+
+For example:
 
 ## App Store Server Notifications
 
@@ -150,7 +184,7 @@ After deploying, configure Apple to send subscription notifications to your serv
    ```
    https://<your-railway-url>.up.railway.app/api/appstore/webhook/
    ```
-3. Set the **Sandbox URL** to the same (or a separate staging deployment)
+3. Set the **Sandbox URL** to the same (or a separate staging deployment) -- this can be the same for both sandbox and production as the data sent from the AppStore will tell the server if it is a sandbox or production notification.
 4. Select **Version 2 Notifications**
 
 The webhook receives notifications for subscription events (purchase, renewal, expiry, refund, revocation) and updates the local `AppStoreSubscription` records accordingly. The `game_content` detail endpoint cross-checks these records when verifying entitlements.
