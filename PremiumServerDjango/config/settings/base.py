@@ -94,8 +94,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
-    # WebVersion pre-built JS served as /static/dist/
-    ('dist', BASE_DIR.parent / 'WebVersion' / 'dist'),
+    # Local dev: WebVersion dist (no copy needed). Production: static/game (committed, copied by npm run build).
+    ('game'),
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 

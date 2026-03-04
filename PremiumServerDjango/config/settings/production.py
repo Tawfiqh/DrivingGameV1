@@ -34,6 +34,5 @@ STORAGES = {
     },
 }
 
-# In production the Django server serves the API only; the WebVersion/dist
-# directory is not available on the deploy host.
+# Production: static/ includes static/game/ (WebVersion JS built via npm run build (or ./run.sh should go in here)).
 STATICFILES_DIRS = [BASE_DIR / 'static']
