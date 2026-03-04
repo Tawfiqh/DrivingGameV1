@@ -123,4 +123,7 @@ APPSTORE_APP_APPLE_ID: int | None = (
 APPSTORE_ENVIRONMENT = os.environ.get("APPSTORE_ENVIRONMENT", "Sandbox")
 APPSTORE_ENABLE_ONLINE_CHECKS = os.environ.get("APPSTORE_ENABLE_ONLINE_CHECKS", "true").lower() == "true"
 APPSTORE_SUBSCRIPTION_PRODUCT_IDS = ["plus.standard", "plus.premium"]
+# Allow Xcode StoreKit Testing tokens (self-signed, no Apple chain).
+# MUST be False in production — only enable for local development.
+APPSTORE_ALLOW_XCODE_STOREKIT = os.environ.get("APPSTORE_ALLOW_XCODE_STOREKIT", "false").lower() == "true"
 
