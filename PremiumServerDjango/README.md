@@ -1,32 +1,13 @@
-# CarDriveDash — Django Backend
+# Sundown Getaway — Django Backend
 
-Django 5 backend for CarDriveDash. Serves the game to all visitors and provides an admin interface for managing game content (maps, colour schemes).
+Django 5 backend for Sundown Getaway (CarDriveDash). Serves the browser game, provides a premium game-config API gated by App Store subscription verification, and receives App Store Server Notifications V2 for real-time subscription lifecycle events.
 
-## What it does
-
-- **`/`** — Serves the pre-built WebVersion game (no login required)
-- **`/admin/`** — Admin interface where superusers create and manage `GameContent` entries (name, display name, JSON config defining maps and colour schemes)
-
-## Project Structure
-
-```
-PremiumServerDjango/
-├── config/             # Settings (base / development / production), root URLs, WSGI
-├── core/               # Game view served at /
-├── game_content/       # GameContent model — maps and colour schemes
-├── users/              # Custom user model, login/logout
-├── static/             # Django static assets
-├── templates/          # core/game.html, registration/login.html
-├── Setup.sh            # First-time setup script
-└── run.sh              # Start dev server
-```
-
-## Setup
+## Setup / How to Run Locally
 
 ### Prerequisites
 
 - Python 3.12+
-- WebVersion built first — run `npm run build` in `../WebVersion/` (or use the root `./run.sh` which does both)
+- (Optional) WebVersion built first — run `npm run build` in `../WebVersion/` if you want the browser game served at `/`
 
 ### First-time setup
 
@@ -42,41 +23,145 @@ This creates the virtualenv, installs dependencies, runs migrations, and optiona
 ./run.sh
 ```
 
-Or from the repo root:
-
-```bash
-../run.sh   # builds WebVersion then starts Django
-```
-
-Access the game at `http://127.0.0.1:8000/` and the admin at `http://127.0.0.1:8000/admin/`.
-
-### Manual setup
+Or manually:
 
 ```bash
 python3.12 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py createsuperuser
+python manage.py createsuperuser   # optional, for admin access
 python manage.py runserver
 ```
 
-## GameContent model
+- Game: `http://127.0.0.1:8000/`
+- Admin: `http://127.0.0.1:8000/admin/`
+- Game config API: `http://127.0.0.1:8000/api/game-content/`
 
-Managed entirely via the Django admin. Fields:
+## Architecture
 
-| Field | Type | Description |
-|---|---|---|
-| `name` | SlugField | Unique identifier (auto-populated from display name) |
-| `display_name` | CharField | Human-readable name shown in the game |
-| `json_config` | JSONField | Map layout, colour scheme, and other game parameters |
+```
+PremiumServerDjango/
+├── config/             # Settings (base / development / production), root URLs, WSGI
+├── core/               # Browser game view served at /
+├── game_content/       # GameContent model + premium-gated API
+├── appstore/           # App Store Server Notifications V2 webhook + JWS verification
+├── users/              # Custom user model, login/logout
+├── static/             # Django static assets
+├── templates/          # core/game.html, registration/login.html
+├── Procfile            # Gunicorn start command for Railway / Heroku
+├── runtime.txt         # Python version for Railway / Heroku
+├── railway.toml        # Railway-specific deploy config
+└── requirements.txt    # Python dependencies
+```
 
-## Settings
+### Apps
+
+| App | Purpose |
+|---|---|
+| `core` | Serves the browser game at `/` |
+| `game_content` | `GameContent` model (maps, colour schemes). Premium-gated detail API at `/api/game-content/<slug>/` — returns `json_config` only for verified subscribers |
+| `appstore` | Receives App Store Server Notifications V2 at `/api/appstore/webhook/`. Persists subscription state in `AppStoreSubscription` model. Provides JWS verification utilities used by `game_content` |
+| `users` | Custom `AbstractUser` model, login/logout views |
+
+### URL Structure
+
+| Path | Method | Auth | Description |
+|---|---|---|---|
+| `/` | GET | None | Browser game |
+| `/admin/` | GET | Superuser | Django admin |
+| `/accounts/login/` | GET/POST | None | Login |
+| `/accounts/logout/` | POST | None | Logout |
+| `/api/game-content/` | GET | None | List all GameContent (metadata only) |
+| `/api/game-content/<slug>/` | GET | App Store JWS | Premium game config detail (401 without valid subscription) |
+| `/api/appstore/webhook/` | POST | Apple JWS | App Store Server Notifications V2 endpoint |
+
+### Settings
 
 Split across three files in `config/settings/`:
 
-- `base.py` — shared config; also wires `WebVersion/dist/` into Django's static files as `/static/dist/`
-- `development.py` — `DEBUG=True`, local hosts
-- `production.py` — reads `SECRET_KEY`, `ALLOWED_HOSTS` from environment variables; enforces HTTPS cookies
+- **`base.py`** — shared config, App Store settings, static files
+- **`development.py`** — `DEBUG=True`, local hosts
+- **`production.py`** — reads secrets from env vars, enforces HTTPS cookies, WhiteNoise for static files
 
-Switch environments via `DJANGO_SETTINGS_MODULE` in `manage.py` or as an environment variable.
+Switch environments via the `DJANGO_SETTINGS_MODULE` environment variable. The default (in `manage.py` and `wsgi.py`) is `config.settings.development`.
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `SECRET_KEY` | **Production** | `django-insecure-...` | Django secret key |
+| `DEBUG` | No | `True` (dev) / `False` (prod) | Debug mode |
+| `ALLOWED_HOSTS` | **Production** | `127.0.0.1,localhost` | Comma-separated allowed hosts |
+| `DJANGO_SETTINGS_MODULE` | **Production** | `config.settings.development` | Must be `config.settings.production` on Railway |
+| `APPSTORE_BUNDLE_ID` | Yes | `com.yourcompany.getawayrun` | App bundle ID (must match App Store Connect) |
+| `APPSTORE_APP_APPLE_ID` | **Production** | — | Numeric App Apple ID from App Store Connect |
+| `APPSTORE_ENVIRONMENT` | No | `Sandbox` | `Sandbox` or `Production` |
+| `APPSTORE_ROOT_CA_G3_PATH` | Yes | — | Path to Apple Root CA G3 cert (DER format) |
+| `APPSTORE_ROOT_CA_G2_PATH` | No | — | Path to Apple Root CA G2 cert (DER format) |
+| `APPSTORE_ENABLE_ONLINE_CHECKS` | No | `true` | Enable OCSP certificate checks |
+| `SECURE_SSL_REDIRECT` | No | `False` | Redirect HTTP to HTTPS (set `True` on Railway) |
+
+## Deployment (Railway)
+
+### 1. Create a Railway project
+
+Go to [railway.app](https://railway.app), create a new project, and connect your GitHub repo. Railway auto-detects the Python app via `requirements.txt`, `Procfile`, and `runtime.txt`.
+
+### 2. Set the root directory
+
+In Railway's service settings, set the **Root Directory** to `PremiumServerDjango` so Railway builds from the correct subdirectory.
+
+### 3. Set environment variables
+
+In the Railway dashboard, add these variables:
+
+```
+DJANGO_SETTINGS_MODULE=config.settings.production
+SECRET_KEY=<generate a strong random key>
+ALLOWED_HOSTS=<your-app>.up.railway.app
+APPSTORE_BUNDLE_ID=uk.co.tawfiq.GetawayRun
+APPSTORE_ENVIRONMENT=Sandbox
+APPSTORE_ROOT_CA_G3_PATH=/app/certs/AppleRootCA-G3.cer
+```
+
+> **Apple Root CA certs**: Download from [Apple PKI](https://www.apple.com/certificateauthority/). Place the `.cer` files in a `certs/` directory in the project, or configure the paths to wherever you store them on the deploy host.
+
+### 4. Deploy
+
+Railway will automatically:
+1. Install Python 3.12 (from `runtime.txt`)
+2. Install dependencies (from `requirements.txt`)
+3. Run the start command from `railway.toml` (migrates, collects static files, starts gunicorn)
+
+### 5. Get your Railway URL
+
+After deployment, Railway assigns a public URL like `https://<your-app>.up.railway.app`. Use this URL in:
+
+- **iOS app**: Set it in `ApplePlatforms/CarDriveDash/Config/Release.xcconfig`
+- **App Store Connect**: Configure the webhook URL (see below)
+
+## App Store Server Notifications
+
+After deploying, configure Apple to send subscription notifications to your server:
+
+1. Go to [App Store Connect](https://appstoreconnect.apple.com) > Your App > App Information
+2. Under **App Store Server Notifications**, set the **Production URL** to:
+   ```
+   https://<your-railway-url>.up.railway.app/api/appstore/webhook/
+   ```
+3. Set the **Sandbox URL** to the same (or a separate staging deployment)
+4. Select **Version 2 Notifications**
+
+The webhook receives notifications for subscription events (purchase, renewal, expiry, refund, revocation) and updates the local `AppStoreSubscription` records accordingly. The `game_content` detail endpoint cross-checks these records when verifying entitlements.
+
+## iOS App Configuration
+
+The iOS app reads the server URL from an `.xcconfig` file via Info.plist. To wire it up:
+
+1. In Xcode, add the files from `CarDriveDash/Config/` to the project
+2. Go to **Project** (not target) > **Info** > **Configurations**
+3. Set **Debug** to use `Debug.xcconfig` and **Release** to use `Release.xcconfig`
+4. Edit `Release.xcconfig` and replace `YOUR_RAILWAY_URL` with your actual Railway domain
+
+The `GameConfigService` reads `GameConfigBaseURL` from Info.plist at runtime, falling back to `http://127.0.0.1:8000` in debug builds if the xcconfig is not yet assigned.
