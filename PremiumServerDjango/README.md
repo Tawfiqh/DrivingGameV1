@@ -91,9 +91,9 @@ Switch environments via the `DJANGO_SETTINGS_MODULE` environment variable. The d
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `SECRET_KEY` | **Production** | `django-insecure-...` | Django secret key |
+| `DATABASE_URL` | **Production** | — | PostgreSQL connection URL (set automatically when you add Postgres in Railway) |
 | `DEBUG` | No | `True` (dev) / `False` (prod) | Debug mode |
 | `ALLOWED_HOSTS` | **Production** | `127.0.0.1,localhost` | Comma-separated allowed hosts |
-| `CSRF_TRUSTED_ORIGINS` | **Production** | `http://127.0.0.1:8000,https://<your-app>.up.railway.app` | Comma-separated trusted origins for CSRF protection |
 | `DJANGO_SETTINGS_MODULE` | **Production** | `config.settings.development` | Must be `config.settings.production` on Railway |
 | `APPSTORE_BUNDLE_ID` | Yes | `com.yourcompany.getawayrun` | App bundle ID (must match App Store Connect) |
 | `APPSTORE_APP_APPLE_ID` | **Production** | — | Numeric App Apple ID from App Store Connect |
@@ -102,18 +102,29 @@ Switch environments via the `DJANGO_SETTINGS_MODULE` environment variable. The d
 | `APPSTORE_ROOT_CA_G2_PATH` | No | — | Path to Apple Root CA G2 cert (DER format) |
 | `APPSTORE_ENABLE_ONLINE_CHECKS` | No | `true` | Enable OCSP certificate checks |
 | `SECURE_SSL_REDIRECT` | No | `False` | Redirect HTTP to HTTPS (set `True` on Railway) |
-CSRF_TRUSTED_ORIGINS=https://sundown-getaway-api-production.up.railway.app
+
+`CSRF_TRUSTED_ORIGINS` is derived from `ALLOWED_HOSTS` in production (https for each host).
+
 ## Deployment (Railway)
 
 ### 1. Create a Railway project
 
 Go to [railway.app](https://railway.app), create a new project, and connect your GitHub repo. Railway auto-detects the Python app via `requirements.txt`, `Procfile`, and `runtime.txt`.
 
-### 2. Set the root directory
+### 2. Add PostgreSQL (required for production)
 
-In Railway's service settings, set the **Root Directory** to `PremiumServerDjango` so Railway builds from the correct subdirectory.
+Production needs a persistent database; without it, data (including admin users) is lost on every redeploy.
 
-### 3. Set environment variables
+The deploy script (see **Deploy** below) ensures a Postgres service exists (adds it if missing); no `railway link` or GUI needed.
+
+In the dashboard, ensure your **app** service has `DATABASE_URL` = `${{Postgres.DATABASE_URL}}` (see **Deploy** below).
+
+
+### 3. Set the root directory
+
+In Railway's service settings for the app, set the **Root Directory** to `PremiumServerDjango` so Railway builds from the correct subdirectory.
+
+### 4. Set environment variables
 
 In the Railway dashboard, add these variables:
 
@@ -127,27 +138,24 @@ APPSTORE_ROOT_CA_G3_PATH=/app/certs/AppleRootCA-G3.cer
 ```
 
 > **Apple Root CA certs**: Download from [Apple PKI](https://www.apple.com/certificateauthority/). Place the `.cer` files in a `certs/` directory in the project, or configure the paths to wherever you store them on the deploy host.
+> **DATABASE_URL**: If you added PostgreSQL and linked it to the app, Railway sets this automatically. You do not need to add it by hand.
 
-### 4. Deploy
+### 5. Deploy
 
-You can deploy using the deploy script:
+From the **repo root**, with the [Railway CLI](https://docs.railway.app/reference/cli-api) installed and logged in (`railway login`), run:
 
 ```bash
 ./deploy.sh
 ```
 
-this mostly just calls: 
+No `railway link` is required; the script uses project/environment/service IDs. It will (1) ensure a Postgres service exists in the project, (2) build WebVersion and copy to `PremiumServerDjango/static/game/`, (3) deploy the Django app to Railway. To point at a different project/environment, set `RAILWAY_PROJECT_ID`, `RAILWAY_ENVIRONMENT_ID`, and `RAILWAY_SERVICE_ID` before running.
 
-```bash
-railway up ./PremiumServerDjango
-```
-
-Railway will automatically:
+Railway will then:
 1. Install Python 3.12 (from `runtime.txt`)
 2. Install dependencies (from `requirements.txt`)
 3. Run the start command from `railway.toml` (migrates, collects static files, starts gunicorn)
 
-### 5. Get your Railway URL
+### 6. Get your Railway URL
 
 After deployment, Railway assigns a public URL like `https://<your-app>.up.railway.app`. Use this URL in:
 You can find this by running `railway domain --json` in the Django project directory.
@@ -155,7 +163,7 @@ You can find this by running `railway domain --json` in the Django project direc
 - **iOS app**: Set it in `ApplePlatforms/CarDriveDash/Config/Release.xcconfig`
 - **App Store Connect**: Configure the webhook URL (see below)
 
-### 6. Run Management Commands on Railway
+### 7. Run Management Commands on Railway
 
 SSH Into the Railway project:
 ```bash

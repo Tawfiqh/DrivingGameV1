@@ -5,8 +5,24 @@ Production settings for DjangoTemplate26 project.
 from .base import *
 import os
 
+import dj_database_url
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+
+# Persistent database (required in production so data survives redeploys)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if not DATABASE_URL:
+    raise ValueError(
+        "DATABASE_URL environment variable must be set in production. "
+        "Add a PostgreSQL service in Railway and link it to this app."
+    )
+DATABASES = {
+    'default': dj_database_url.config(
+        conn_max_age=600,
+        conn_health_checks=True,
+    ),
+}
 
 ALLOWED_HOSTS = [h for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h]
 
