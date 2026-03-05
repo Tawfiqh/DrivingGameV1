@@ -56,15 +56,36 @@ def get_verifier() -> SignedDataVerifier:
 
     root_cert_paths: list[str] = getattr(settings, "APPSTORE_ROOT_CA_PATHS", [])
     logger.info(
-        "⚒️🔒 Building new App Store SignedDataVerifier num_root_cert_paths=%s paths=%s",
+        "🔒 Building new App Store SignedDataVerifier num_root_cert_paths=%s paths=%s",
         len(root_cert_paths),
         root_cert_paths,
     )
+    if not root_cert_paths:
+        logger.error(
+            "🔒 No Apple root CA certs configured. Set APPSTORE_ROOT_CA_G3_PATH (and optionally "
+            "APPSTORE_ROOT_CA_G2_PATH) to paths under the project so they are deployed (e.g. "
+            "certs/AppleRootCA-G3.cer). Download DER certs from https://www.apple.com/certificateauthority/"
+        )
+        raise ValueError(
+            "APPSTORE_ROOT_CA_G3_PATH must be set and the cert file must exist in the deployed app. "
+            "Use e.g. certs/AppleRootCA-G3.cer and add the Apple Root CA G3 (DER) to PremiumServerDjango/certs/."
+        )
     root_certificates: list[bytes] = []
     for path in root_cert_paths:
-        logger.debug("⚒️🔒 Loading App Store root certificate path=%s", path)
-        with open(path, "rb") as f:
-            root_certificates.append(f.read())
+        try:
+            with open(path, "rb") as f:
+                root_certificates.append(f.read())
+            logger.debug("🔒 Loaded App Store root certificate path=%s", path)
+        except FileNotFoundError:
+            logger.error(
+                "🔒 Apple root CA cert file not found path=%s (not deployed?). Add certs to e.g. "
+                "PremiumServerDjango/certs/ and set APPSTORE_ROOT_CA_G3_PATH=certs/AppleRootCA-G3.cer",
+                path,
+            )
+            raise FileNotFoundError(
+                f"Apple root CA cert not found: {path}. Ensure the file is in the repo (e.g. "
+                "PremiumServerDjango/certs/) and APPSTORE_ROOT_CA_G3_PATH is set."
+            ) from None
 
     environment = _get_environment()
     bundle_id: str = settings.APPSTORE_BUNDLE_ID

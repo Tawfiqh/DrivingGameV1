@@ -58,3 +58,32 @@ STORAGES = {
 
 # Production: static/ includes static/game/ (WebVersion JS built via npm run build (or ./run.sh should go in here)).
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# Logging: be reasonably verbose in production, but avoid debug noise.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        # Root logger – INFO and above to console.
+        "": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+        # App Store / premium flows – explicitly INFO so entitlement logs appear.
+        "appstore": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "game_content": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
